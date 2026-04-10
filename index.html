@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOBOspeak 反馈报告生成器 Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E293B',    /* 商务深蓝 */
+            brand: '#3B82F6',      /* 品牌蓝 */
+            success: '#10B981',    /* 成功绿 */
+            accent: '#F8FAFC',     /* 背景底色 */
+          },
+          borderRadius: { '2xl': '1rem' }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .editor-card { @apply bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-6 transition-all; }
+      .input-field { @apply w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none text-slate-700 text-sm; }
+      .section-title { @apply text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 border-l-4 border-brand pl-3; }
+      .shortcut-btn { @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105 active:scale-95 shadow-sm; }
+      .task-item { @apply bg-slate-50 p-5 rounded-2xl mb-6 border border-slate-200 relative; }
+      .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
+      .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
+      
+      /* 右侧预览区独立滚动条样式 */
+      .preview-scroll-wrapper { @apply overflow-y-auto pr-2; max-height: calc(100vh - 10rem); }
+      .preview-scroll-wrapper::-webkit-scrollbar { width: 8px; }
+      .preview-scroll-wrapper::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px; }
+      .preview-scroll-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f8fafc; }
+      .preview-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      
+      /* 全局默认滚动条 */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+
+  <nav class="bg-primary text-white py-4 px-6 sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i class="fa fa-file-text-o text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v3.1 Pro</span></h1>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
+        </div>
+      </div>
+      <div class="hidden md:flex gap-4">
+         <div id="saveStatus" class="text-xs text-slate-400 flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full transition-all">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 实时预览同步中
+         </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto p-4 lg:p-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      
+      <section class="w-full lg:w-1/2 space-y-6">
+        
+        <div class="editor-card">
+          <h2 class="section-title"><i class="fa fa-id-card-o text-brand"></i> 学生档案信息</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Student Name / 姓名</label>
+              <input type="text" id="studentName" class="input-field" placeholder="输入宝贝姓名">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Date / 上课日期</label>
+              <input type="date" id="classDate" class="input-field">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Class / 班级</label>
+              <input type="text" id="className" class="input-field" placeholder="Level 3 - A1">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Unit / 单元内容</label>
+              <input type="text" id="unitName" class="input-field" placeholder="Unit 5 Animals">
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-card border-t-4 border-brand">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="section-title mb-0 border-none pl-0"><i class="fa fa-microphone text-brand"></i> 语音任务详情</h2>
+            <button id="addVoiceTask" class="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-600 shadow-md shadow-blue-500/20 transition-all active:scale-95">
+              <i class="fa fa-plus mr-1"></i> 新增任务
+            </button>
+          </div>
+          <div id="voiceTasksContainer" class="space-y-4">
+            </div>
+        </div>
+
+        <div class="editor-card border-t-4 border-success">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="section-title mb-0 border-none pl-0"><i class="fa fa-pencil text-success"></i> 书写任务详情</h2>
+            <button id="addWritingTask" class="bg-success text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all active:scale-95">
+              <i class="fa fa-plus mr-1"></i> 新增任务
+            </button>
+          </div>
+          <div id="writingTasksContainer" class="space-y-4">
+            </div>
+        </div>
+
+        <div class="editor-card bg-slate-50/50">
+            <h2 class="section-title"><i class="fa fa-bar-chart text-brand"></i> 学习进度与评价</h2>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 ml-1">当前课时 (Current)</label>
+                    <input type="number" id="currentClass" step="0.1" class="input-field" placeholder="5.5">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 ml-1">总计课时 (Total)</label>
+                    <input type="number" id="totalClass" step="0.1" class="input-field" placeholder="40">
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 ml-1">教师综合寄语</label>
+                <textarea id="otherFeedback" class="input-field" rows="4" placeholder="写下对宝贝的鼓励或给家长的务实建议..."></textarea>
+            </div>
+        </div>
+
+        <div class="editor-card">
+          <h2 class="section-title"><i class="fa fa-tags text-slate-400"></i> 页脚标语设置</h2>
+          <div class="space-y-3">
+            <input type="text" id="bottomText1" class="input-field" value="BOBOspeak英语工作室">
+            <input type="text" id="bottomText2" class="input-field" value="让英语不止是学科，更是未来竞争力！🚀">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 lg:grid-cols-6 gap-3 pb-24">
+            <button id="importBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="fa fa-folder-open-o mb-1"></i><span class="text-xs font-bold">导入JSON</span>
+            </button>
+            <button id="exportBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="fa fa-file-code-o mb-1"></i><span class="text-xs font-bold">导出JSON</span>
+            </button>
+            <button id="restoreBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="fa fa-history mb-1"></i><span class="text-[10px] font-bold">恢复手动存档</span>
+            </button>
+            <button id="resetBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                <i class="fa fa-trash-o mb-1"></i><span class="text-[10px] font-bold">清空重置</span>
+            </button>
+            <button id="saveBtn" class="flex flex-col items-center justify-center p-3 bg-slate-800 text-white rounded-2xl hover:bg-slate-900 shadow-lg active:scale-95 transition-all">
+                <i class="fa fa-save mb-1"></i><span class="text-xs font-bold">手动保存</span>
+            </button>
+            <button id="downloadBtn" class="flex flex-col items-center justify-center p-3 bg-brand text-white rounded-2xl hover:bg-blue-600 shadow-xl shadow-blue-500/20 active:scale-95 transition-all">
+                <i class="fa fa-download mb-1"></i><span class="text-xs font-bold">生成图片</span>
+            </button>
+        </div>
+        <input type="file" id="importFileInput" accept=".json" class="hidden">
+      </section>
+
+      <section class="w-full lg:w-1/2">
+        <div class="lg:sticky lg:top-24">
+          <div class="flex justify-between items-center mb-4 px-2">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <span class="w-2 h-2 bg-brand rounded-full"></span> 报告单实时预览
+            </h2>
+            <div class="flex gap-2">
+                <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+            </div>
+          </div>
+
+          <div class="preview-scroll-wrapper">
+            <div id="previewContainer" class="preview-sheet rounded-xl border border-slate-200 origin-top">
+              <div class="bg-primary text-white p-8 text-center relative overflow-hidden">
+                  <div class="absolute top-0 right-0 p-4 opacity-10">
+                      <i class="fa fa-graduation-cap text-8xl -rotate-12"></i>
+                  </div>
+                  <h2 class="text-2xl font-black tracking-widest mb-1 relative z-10">学生课后任务反馈单</h2>
+                  <p class="text-slate-400 text-[10px] tracking-[0.3em] font-light relative z-10">AFTER-CLASS TASK FEEDBACK FORM</p>
+              </div>
+              
+              <div class="p-8 space-y-8">
+                <div class="grid grid-cols-2 gap-x-12 gap-y-5 border-b border-slate-100 pb-6">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-black text-slate-400 uppercase italic">Student Name</span>
+                    <span id="previewName" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-black text-slate-400 uppercase italic">Class Name</span>
+                    <span id="previewClass" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-black text-slate-400 uppercase italic">Date</span>
+                    <span id="previewDate" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-black text-slate-400 uppercase italic">Unit / Topic</span>
+                    <span id="previewUnit" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
+                  </div>
+                </div>
+
+                <div class="overflow-hidden border border-slate-100 rounded-lg shadow-sm">
+                  <table class="w-full text-[11px] text-left border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 uppercase font-black border-b border-slate-100">
+                      <tr>
+                        <th class="p-3 w-16 border-r border-slate-100">分类</th>
+                        <th class="p-3 w-1/4 border-r border-slate-100">任务内容</th>
+                        <th class="p-3 w-1/4 border-r border-slate-100">表现记录</th>
+                        <th class="p-3 w-1/5 border-r border-slate-100">重点关注</th>
+                        <th class="p-3">改进建议</th>
+                      </tr>
+                    </thead>
+                    <tbody id="previewTasksTableBody" class="text-slate-700">
+                      </tbody>
+                  </table>
+                </div>
+
+                <div id="previewOtherFeedbackContainer">
+                  <h3 class="text-xs font-black mb-3 flex items-center gap-2 text-primary uppercase italic">
+                      <span class="w-8 h-1 bg-brand rounded-full"></span> Teacher's Feedback
+                  </h3>
+                  <div class="bg-blue-50/40 p-5 rounded-2xl border-l-4 border-brand italic text-slate-600 text-xs leading-loose preserve-line-breaks" id="previewOtherFeedback">
+                    暂无内容
+                  </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
+                  <div class="flex justify-between items-end mb-2">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Course Progress</span>
+                      <span class="text-xs font-black text-brand" id="previewClassProgressText">0 / 0</span>
+                  </div>
+                  <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div id="previewClassProgressBar" class="h-full bg-brand transition-all duration-1000 ease-out" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-primary p-6 text-center text-white">
+                <p id="previewBottomText1" class="font-black tracking-widest text-sm mb-1 uppercase">BOBOspeak 英语工作室</p>
+                <p id="previewBottomText2" class="text-[10px] text-slate-400 tracking-wider">让英语不止是学科，更是未来竞争力！ 🚀</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="notification" class="fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-2xl transform translate-y-[-150%] transition-all duration-300 z-[100] flex items-center gap-3 font-bold bg-slate-800 text-white text-sm"></div>
+
+  <script>
+    /* ========================================================
+       1. 配置所有全量备选项 (已增加坐姿提醒)
+       ======================================================== */
+    const TASK_OPTIONS = {
+      voice: {
+        performance: [
+          ["单词优秀", "单词发音准确，吐字饱满清晰，掌握得不错。"],
+          ["单词良好", "能够准确读出大部分单词，个别单词发音需注意准确性。"],
+          ["单词待提升", "部分单词发音尚需巩固，准确率有待提升。"],
+          ["拆分优秀", "拆分处理得很好，发音标准，节奏把握准确。"],
+          ["拆分尚可", "拆分处理得还可以，发音基本标准，注意部分音节的发音准确性。"],
+          ["拆分待提升", "拆分处理有待提高，大部分发音细节需加以巩固。"],
+          ["连读优秀", "句子连读自然流畅，意群停顿准确，语感很棒。"],
+          ["连读良好", "句子连读比较流畅，个别连读细节需稍加注意。"],
+          ["连读待提升", "句子连读略显生硬，需多注意词与词之间的自然过渡。"],
+          ["语调优秀", "重音和语调把握较好，连读自然流畅。"],
+          ["输出优秀", "输出流畅，表达准确，发音清晰。"],
+          ["输出良好", "输出较流畅，表达基本准确，需注意部分细节。"],
+          ["归纳优秀", "错题归纳思路清晰，能准确分析客观错误原因，订正到位。"],
+          ["归纳良好", "错题归纳基本完整，能找到大部分错误原因，继续保持。"],
+          ["归纳尚需努力", "错题归纳不够完整，部分错误原因分析尚需努力，需要多加复习。"],
+          ["复述优秀", "故事复述完整，逻辑清晰，细节把握到位，表达流畅自然。"],
+          ["复述良好", "能够复述出故事的主要客观情节，表达比较连贯，注意部分细节的表达。"],
+          ["复述尚需努力", "在故事复述时情节完整度尚需努力，建议课后多加练习。"]
+        ],
+        focus: [
+          ["单词重音", "注意多音节单词的重音位置"],
+          ["尾音处理", "注意单词尾音的清晰发音，避免吞音"],
+          ["元音饱满", "注意元音发音的饱满度"],
+          ["辅音清晰", "加强辅音的清晰发音"],
+          ["意群停顿", "注意长句的意群划分和合理停顿"],
+          ["语流自然", "提升语流的自然度"],
+          ["端正坐姿", "注意朗读和跟读时的坐姿，保持精神饱满"]
+        ],
+        improve: [
+          ["每日跟读", "每天坚持10-15分钟跟读练习。"],
+          ["多听原声", "多听原声示范材料，跟读薄弱部分。"],
+          ["指读练习", "进行指读练习，将单词形和音对应起来。"],
+          ["标记连读", "建议在文本中标注连读符号，先慢速跟读，找准发音感觉。"],
+          ["APP辅助", "使用APP辅助发音练习。"],
+          ["熟读再录", "先跟读熟练再完成任务。"],
+          ["关键词提示", "可借助关键词书写提示。"],
+          ["提醒坐姿", "练习时请家长协助提醒宝贝保持端正坐姿。"]
+        ]
+      },
+      writing: {
+        performance: [
+          ["全对+工整", "填空全部正确，书写工整漂亮，卷面整洁。"],
+          ["大部分对+工整", "填空大部分正确，书写工整漂亮。"],
+          ["书写待提升", "填空大部分正确，但书写有待提高。"],
+          ["需加强", "填空正确率不高，书写也需要加强。"]
+        ],
+        focus: [
+          ["贴近线条", "单词书写时贴近书写线条"],
+          ["间隔均匀", "注意单词间隔均匀"],
+          ["笔顺规范", "注意字母笔顺和占格规范"],
+          ["端正坐姿", "注意书写时的坐姿，做到“一尺一寸一拳”"]
+        ],
+        improve: [
+          ["每日练字", "每天练习10分钟英文书写。"],
+          ["先看后写", "书写前先观察字母结构。"],
+          ["四线练习", "使用四线三格练习本，规范字母书写。"],
+          ["坐姿提醒", "书写时请家长协助提醒宝贝保持端正坐姿，保护视力和脊椎。"]
+        ]
+      }
+    };
+
+    /* ========================================================
+       2. DOM 元素及基础功能
+       ======================================================== */
+    const els = {
+        studentName: document.getElementById('studentName'),
+        classDate: document.getElementById('classDate'),
+        className: document.getElementById('className'),
+        unitName: document.getElementById('unitName'),
+        otherFeedback: document.getElementById('otherFeedback'),
+        currentClass: document.getElementById('currentClass'),
+        totalClass: document.getElementById('totalClass'),
+        bottomText1: document.getElementById('bottomText1'),
+        bottomText2: document.getElementById('bottomText2'),
+        voiceContainer: document.getElementById('voiceTasksContainer'),
+        writingContainer: document.getElementById('writingTasksContainer'),
+        previewTable: document.getElementById('previewTasksTableBody'),
+        notif: document.getElementById('notification'),
+        importFileInput: document.getElementById('importFileInput')
+    };
+
+    function notify(msg, type = 'default') {
+        els.notif.textContent = msg;
+        els.notif.className = `fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-2xl transform transition-all duration-300 z-[100] flex items-center gap-3 font-bold text-sm ${type === 'error' ? 'bg-red-500' : 'bg-slate-800'} text-white translate-y-0`;
+        setTimeout(() => els.notif.classList.add('translate-y-[-150%]'), 2500);
+    }
+
+    function appendText(textarea, text) {
+        textarea.value = textarea.value ? (textarea.value + '\n' + text) : text;
+        sync();
+        textarea.focus();
+    }
+
+    // 生成选项按钮
+    function createOptionBtns(list, textareaSelector, colorClass) {
+        return list.map(([label, text]) => 
+            `<button type="button" class="shortcut-btn ${colorClass}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), '${text}')">${label}</button>`
+        ).join('');
+    }
+
+    /* ========================================================
+       3. 核心交互：动态添加任务
+       ======================================================== */
+    function addTask(type) {
+        const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
+        const config = TASK_OPTIONS[type];
+        const idx = container.children.length + 1;
+        const div = document.createElement('div');
+        div.className = `task-item border-l-4 ${type === 'voice' ? 'border-brand' : 'border-success'}`;
+        
+        div.innerHTML = `
+            <button class="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors" onclick="if(confirm('删除此项吗?')){this.closest('.task-item').remove();sync();}"><i class="fa fa-times-circle text-xl"></i></button>
+            <div class="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest mb-4 ${type === 'voice' ? 'bg-blue-100 text-brand' : 'bg-emerald-100 text-success'}">
+                ${type === 'voice' ? 'Voice' : 'Writing'} Task #${idx}
+            </div>
+            <div class="space-y-4">
+                <div><label class="text-[10px] font-bold text-slate-400 mb-1 block">具体任务内容</label><textarea class="task-content input-field" rows="2"></textarea></div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 mb-2 block">完成表现 (点击快捷输入)</label>
+                    <div class="flex flex-wrap gap-2 mb-2">${createOptionBtns(config.performance, '.task-perf', type === 'voice' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700')}</div>
+                    <textarea class="task-perf input-field" rows="2"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">重点关注</label>
+                        <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
+                        <textarea class="task-focus input-field" rows="2"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">改进建议</label>
+                        <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.improve, '.task-impr', type === 'voice' ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700')}</div>
+                        <textarea class="task-impr input-field" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        div.querySelectorAll('textarea').forEach(t => t.oninput = sync);
+        sync();
+    }
+
+    /* ========================================================
+       4. 数据提取机制与核心同步逻辑
+       ======================================================== */
+    function getFormData() {
+        const gather = (container) => {
+            return Array.from(container.querySelectorAll('.task-item')).map(item => ({
+                t: item.querySelector('.task-content').value,
+                p: item.querySelector('.task-perf').value,
+                f: item.querySelector('.task-focus').value,
+                i: item.querySelector('.task-impr').value
+            }));
+        };
+        return {
+            n: els.studentName.value, d: els.classDate.value, c: els.className.value, u: els.unitName.value,
+            f: els.otherFeedback.value, cur: els.currentClass.value, tot: els.totalClass.value,
+            b1: els.bottomText1.value, b2: els.bottomText2.value,
+            v: gather(els.voiceContainer), w: gather(els.writingContainer)
+        };
+    }
+
+    let autoSaveTimeout;
+    function triggerAutoSave() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            localStorage.setItem('bobo_feedback_pro_autosave', JSON.stringify(getFormData()));
+            const statusEl = document.getElementById('saveStatus');
+            if(statusEl) {
+                statusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> 已自动保存';
+                setTimeout(() => {
+                    statusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 实时预览同步中';
+                }, 1500);
+            }
+        }, 500); 
+    }
+
+    function sync() {
+        document.getElementById('previewName').textContent = els.studentName.value || '___________';
+        document.getElementById('previewDate').textContent = els.classDate.value || '___________';
+        document.getElementById('previewClass').textContent = els.className.value || '___________';
+        document.getElementById('previewUnit').textContent = els.unitName.value || '___________';
+        document.getElementById('previewBottomText1').textContent = els.bottomText1.value;
+        document.getElementById('previewBottomText2').textContent = els.bottomText2.value;
+        
+        const feedback = els.otherFeedback.value.trim();
+        document.getElementById('previewOtherFeedback').textContent = feedback || '老师暂未填写额外评价';
+
+        const cur = parseFloat(els.currentClass.value) || 0;
+        const tot = parseFloat(els.totalClass.value) || 0;
+        const pct = tot > 0 ? Math.min(Math.round((cur / tot) * 100), 100) : 0;
+        document.getElementById('previewClassProgressText').textContent = `${cur.toFixed(1)} / ${tot.toFixed(1)} (Hours)`;
+        document.getElementById('previewClassProgressBar').style.width = pct + '%';
+
+        els.previewTable.innerHTML = '';
+        const buildRows = (container, label) => {
+            const items = container.querySelectorAll('.task-item');
+            items.forEach((item, idx) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-50 hover:bg-slate-50/50 transition-colors';
+                const content = item.querySelector('.task-content').value || '-';
+                const perf = item.querySelector('.task-perf').value || '-';
+                const focus = item.querySelector('.task-focus').value || '-';
+                const impr = item.querySelector('.task-impr').value || '-';
+                
+                row.innerHTML = `
+                    ${idx === 0 ? `<td class="p-3 border-r border-slate-50 font-black text-slate-800 bg-slate-50/50" rowspan="${items.length}">${label}</td>` : ''}
+                    <td class="p-3 border-r border-slate-50 align-top preserve-line-breaks font-medium">${content}</td>
+                    <td class="p-3 border-r border-slate-50 align-top preserve-line-breaks text-slate-600">${perf}</td>
+                    <td class="p-3 border-r border-slate-50 align-top preserve-line-breaks text-slate-600">${focus}</td>
+                    <td class="p-3 align-top preserve-line-breaks text-slate-600">${impr}</td>
+                `;
+                els.previewTable.appendChild(row);
+            });
+        };
+
+        buildRows(els.voiceContainer, '语音');
+        buildRows(els.writingContainer, '书写');
+        triggerAutoSave();
+    }
+
+    function loadDataIntoForm(data) {
+        els.studentName.value = data.n || ''; 
+        els.classDate.value = data.d || new Date().toISOString().split('T')[0]; 
+        els.className.value = data.c || ''; 
+        els.unitName.value = data.u || '';
+        els.otherFeedback.value = data.f || ''; 
+        els.currentClass.value = data.cur || ''; 
+        els.totalClass.value = data.tot || '';
+        els.bottomText1.value = data.b1 || 'BOBOspeak英语工作室'; 
+        els.bottomText2.value = data.b2 || '让英语不止是学科，更是未来竞争力！🚀';
+        
+        els.voiceContainer.innerHTML = ''; 
+        els.writingContainer.innerHTML = '';
+        
+        const loadTasks = (items, type) => {
+            if (items && items.length > 0) {
+                items.forEach(item => {
+                    addTask(type);
+                    const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
+                    const last = container.lastElementChild;
+                    if(last) {
+                        last.querySelector('.task-content').value = item.t || '';
+                        last.querySelector('.task-perf').value = item.p || '';
+                        last.querySelector('.task-focus').value = item.f || '';
+                        last.querySelector('.task-impr').value = item.i || '';
+                    }
+                });
+            } else {
+                addTask(type);
+            }
+        };
+
+        loadTasks(data.v, 'voice');
+        loadTasks(data.w, 'writing');
+        sync();
+    }
+
+    /* ========================================================
+       5. 数据保存、导入导出与下载功能
+       ======================================================== */
+    document.getElementById('downloadBtn').onclick = () => {
+        const node = document.getElementById('previewContainer');
+        const sName = els.studentName.value.trim() || '未命名学生';
+        const dateStr = els.classDate.value || new Date().toISOString().split('T')[0];
+        
+        notify('正在生成高清报告单...');
+        html2canvas(node, { scale: 2, useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `${sName}-课后任务情况反馈单_${dateStr}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            notify('报告下载成功！', 'success');
+        });
+    };
+
+    document.getElementById('exportBtn').onclick = () => {
+        const dataStr = JSON.stringify(getFormData(), null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const sName = els.studentName.value.trim() || '未命名学生';
+        const dateStr = els.classDate.value || new Date().toISOString().split('T')[0];
+        link.download = `${sName}_数据备份_${dateStr}.json`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        notify('JSON数据导出成功！', 'success');
+    };
+
+    document.getElementById('importBtn').onclick = () => {
+        els.importFileInput.click();
+    };
+
+    els.importFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                loadDataIntoForm(importedData);
+                notify('JSON数据导入成功！', 'success');
+            } catch (err) {
+                notify('文件格式错误，导入失败', 'error');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; 
+    });
+
+    document.getElementById('saveBtn').onclick = () => {
+        localStorage.setItem('bobo_feedback_pro', JSON.stringify(getFormData()));
+        notify('手动存档成功！(其实浏览器也有在自动保存哦)');
+    };
+
+    document.getElementById('restoreBtn').onclick = () => {
+        const data = JSON.parse(localStorage.getItem('bobo_feedback_pro'));
+        if(!data) return notify('未找到历史手动存档', 'error');
+        loadDataIntoForm(data);
+        notify('已恢复手动保存的进度');
+    };
+
+    document.getElementById('resetBtn').onclick = () => {
+        if(confirm('确定清空当前所有内容并刷新吗？(将清除自动保存的内容)')) {
+            localStorage.removeItem('bobo_feedback_pro_autosave');
+            location.reload();
+        }
+    };
+
+    /* ========================================================
+       6. 初始化
+       ======================================================== */
+    window.onload = () => {
+        const autoSavedData = localStorage.getItem('bobo_feedback_pro_autosave');
+        if (autoSavedData) {
+            try {
+                const parsedData = JSON.parse(autoSavedData);
+                loadDataIntoForm(parsedData);
+                notify('已自动恢复上次没写完的进度 🚀', 'success');
+            } catch(e) {
+                els.classDate.value = new Date().toISOString().split('T')[0];
+                addTask('voice');
+                addTask('writing');
+                sync();
+            }
+        } else {
+            els.classDate.value = new Date().toISOString().split('T')[0];
+            addTask('voice');
+            addTask('writing');
+            sync();
+        }
+        
+        [els.studentName, els.classDate, els.className, els.unitName, els.otherFeedback, els.currentClass, els.totalClass, els.bottomText1, els.bottomText2].forEach(el => el.oninput = sync);
+        
+        document.getElementById('addVoiceTask').onclick = () => addTask('voice');
+        document.getElementById('addWritingTask').onclick = () => addTask('writing');
+    };
+  </script>
+</body>
+</html>
