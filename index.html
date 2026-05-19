@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BOBOspeak 反馈报告生成器 Pro</title>
+  <title>BOBOspeak 反馈报告生成器 Pro Max</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -33,6 +33,9 @@
       .task-item { @apply bg-slate-50 p-5 rounded-2xl mb-6 border border-slate-200 relative; }
       .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
       .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
+      .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
+      .numbered-line { display: flex; align-items: flex-start; gap: 0.35rem; line-height: 1.75; }
+      .num-badge { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: 1.15rem; height: 1.15rem; padding: 0 0.25rem; margin-top: 0.18rem; border-radius: 0.35rem; background: #0EA5E9; color: #fff; font-size: 0.68rem; font-weight: 900; line-height: 1; box-shadow: 0 2px 5px rgba(14,165,233,.22); }
       
       /* 右侧预览区独立滚动条样式 */
       .preview-scroll-wrapper { @apply overflow-y-auto pr-2; max-height: calc(100vh - 10rem); }
@@ -57,7 +60,7 @@
           <i class="fa fa-file-text-o text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v3.3 Pro</span></h1>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.1 Pro</span></h1>
           <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
         </div>
       </div>
@@ -261,90 +264,194 @@
 
   <script>
     /* ========================================================
-       1. 配置所有全量备选项 (全面扩充版本 v3.3 Pro)
+       1. 配置所有全量备选项（精进版：分类化、诊断更细、建议更可执行）
        ======================================================== */
     const TASK_OPTIONS = {
       voice: {
-        performance: [
-          ["单词优秀", "单词发音准确，吐字饱满清晰，掌握得不错。"],
-          ["单词良好", "能够准确读出大部分单词，个别单词发音需注意准确性。"],
-          ["单词发展中", "本次大部分单词发音存在问题，需进一步巩固💪。"],
-          ["拆分优秀", "音素拆分处理得很好，发音标准，节奏把握准确。"],
-          ["拆分尚可", "音素拆分处理还不错，发音基本标准，注意部分音节的发音准确性。"],
-          ["拆分发展中", "绝大部分拆分细节处理得不是很理想，需进一步加强跟练。"],
-          ["连读优秀", "句子连读自然流畅，意群停顿准确，语感很棒。"],
-          ["连读良好", "句子连读比较流畅，个别连读细节需稍加注意。"],
-          ["连读发展中", "句子连读需要进一步加强，需多注意词与词之间的自然过渡。"],
-          ["背诵优秀", "背诵流利，发音准确，能够熟练地把控语音语调，自信大方。"],
-          ["背诵良好", "能够较为完整地背诵出规定内容，流畅度还可以，个别发音细节需稍加注意。"],
-          ["背诵发展中", "背诵有些磕绊，熟练度需要进一步加强，建议课后多加巩固。"],
-          ["语调优秀", "重音和语调把握较好，连读自然流畅。"],
-          ["输出优秀", "语音输出流畅，表达准确，发音清晰。"],
-          ["输出良好", "语音输出较流畅，表达基本准确，留意部分细节。"],
-          ["输出发展中", "输出流畅度需进一步提升，表达基本准确，注意部分细节。"],
-          ["归纳优秀", "思路清晰，能准确分析客观错误原因，订正到位。"],
-          ["归纳良好", "归纳基本完整，能找到大部分错误原因，继续保持。"],
-          ["归纳发展中", "错因归纳得不够完整，错误原因分析需进一步加强，多加练习💪"],
-          ["复述优秀", "故事复述完整，逻辑清晰，细节把握到位，表达流畅自然。"],
-          ["复述良好", "能够复述出故事的主要客观情节，表达比较连贯，注意部分细节的表达。"],
-          ["复述发展中", "故事复述的情节完整度需进一步加强，建议课后多加练习。"],
-          ["节奏发展中", "朗读语速较快，忽略了部分标点符号的停顿，节奏感不太理想。"],
-          ["表现力发展中", "朗读很流利，但在语气和感情的投入还不够，可以更大胆些。"]
-        ],
-        focus: [
-          ["单词重音", "注意多音节单词的重音位置"],
-          ["尾音处理", "注意单词尾音的清晰发音，避免吞音"],
-          ["元音饱满", "注意元音发音的饱满度"],
-          ["辅音清晰", "加强辅音的清晰发音"],
-          ["意群停顿", "注意长句的意群划分和合理停顿"],
-          ["语流自然", "提升语流的自然度"],
-          ["背诵流畅度", "注意背诵的熟练度和整体连贯性"],
-          ["语音语调", "注意背诵时的语音语调和感情投入"],
-          ["端正坐姿", "注意朗读和跟读时的坐姿，保持精神饱满"],
-          ["不吞音加音", "注意避免单词末尾无意识地加音或吞音"],
-          ["标点停顿", "注意根据逗号、句号进行合理的换气停顿"]
-        ],
-        improve: [
-          ["每日跟读", "每天坚持10-15分钟跟读练习。"],
-          ["多听原声", "多听原声示范材料，跟读薄弱部分。"],
-          ["指读练习", "进行指读练习，将单词形和音对应起来。"],
-          ["分段背诵", "建议化整为零，分段落或分句进行背诵练习。"],
-          ["熟读成诵", "先做到熟练朗读，理解意思后再尝试脱稿背诵。"],
-          ["标记连读", "建议在文本中标注连读符号，先慢速跟读，找准发音感觉。"],
-          ["查词熟读", "借助拼读法或词典查清单词发音，再熟读掌握。"],
-          ["APP辅助", "使用APP辅助发音练习。"],
-          ["熟读再录", "先跟读熟练再完成任务。"],
-          ["关键词提示", "可借助关键词书写提示。"],
-          ["提醒坐姿", "练习时请家长协助提醒宝贝保持端正坐姿。"],
-          ["角色扮演", "尝试带入角色情感，进行生动有趣的配音或朗读。"],
-          ["慢速夸张", "针对易错词进行慢速、夸张的口型练习，形成肌肉记忆。"]
-        ]
+        performance: {
+          "单词与自然拼读": [
+            ["单词优秀", "宝贝单词发音非常准确，吐字饱满清晰，掌握得很好。"],
+            ["单词良好", "宝贝能够准确读出大部分单词，个别单词发音需注意准确性。"],
+            ["单词发展中", "宝贝能读出部分核心单词，但个别音形对应还不够稳定，需要继续巩固。"],
+            ["自然拼读优秀", "宝贝能较好地根据字母和字母组合进行拼读，音形对应意识很棒。"],
+            ["自然拼读良好", "宝贝基本能根据拼读规则读出单词，个别组合音还需加强辨认。"],
+            ["自然拼读发展中", "宝贝对部分字母音和组合音还不够熟悉，建议继续做慢速拼读练习。"],
+            ["拆分优秀", "音素拆分处理得很好，发音标准，节奏把握准确。"],
+            ["拆分尚可", "音素拆分处理还可以，发音基本标准，注意部分音节的发音准确性。"],
+            ["拆分发展中", "音素拆分还不够稳定，部分音节容易漏读或混淆，需要继续练习。"]
+          ],
+          "句子朗读": [
+            ["连读优秀", "宝贝句子连读非常自然流畅，意群停顿准确，语感很棒。"],
+            ["连读良好", "宝贝句子连读比较流畅，个别连读细节需稍加注意。"],
+            ["连读发展中", "宝贝句子连读略显生硬，需多注意词与词之间的自然过渡。"],
+            ["句读优秀", "宝贝朗读时能根据句意进行停顿，句子节奏自然清楚。"],
+            ["句读良好", "宝贝基本能读完整句，个别长句的停顿和节奏还可以再优化。"],
+            ["句读发展中", "宝贝朗读长句时容易一口气读完，建议先分意群练习。"],
+            ["语调优秀", "重音和语调把握较好，朗读自然有起伏。"],
+            ["语调良好", "宝贝语调基本自然，个别句子的升降调还可以更明显。"],
+            ["语调发展中", "宝贝朗读时语调较平，需要多模仿原声的重音和语气。"]
+          ],
+          "输出与复述": [
+            ["输出优秀", "语音输出流畅，表达准确，发音清晰。"],
+            ["输出良好", "语音输出较流畅，表达基本准确。"],
+            ["输出发展中", "宝贝能完成基础输出，但表达的连贯性和准确性还需继续提升。"],
+            ["背诵优秀", "宝贝背诵非常熟练，内容完整，语音语调也比较自然。"],
+            ["背诵良好", "宝贝背诵基本完整，个别位置还需要再熟悉。"],
+            ["背诵发展中", "宝贝背诵时还需要提示，建议分段巩固后再整体串联。"],
+            ["复述优秀", "宝贝故事复述非常完整，逻辑清晰，细节把握到位，表达流畅自然。"],
+            ["复述良好", "宝贝能够复述出故事的主要客观情节，表达比较连贯，注意部分细节的表达。"],
+            ["复述发展中", "宝贝在故事复述时情节完整度尚需努力，建议借助关键词多加练习。"]
+          ],
+          "学习习惯": [
+            ["归纳优秀", "宝贝错题归纳思路清晰，能准确分析客观错误原因，订正非常到位。"],
+            ["归纳良好", "宝贝错题归纳基本完整，能找到大部分错误原因，继续保持。"],
+            ["归纳发展中", "宝贝错题归纳还不够完整，部分错误原因分析不够具体，需要多加复盘。"],
+            ["表现力优秀", "宝贝录音状态积极，声音清楚有精神，表达自信大方。"],
+            ["表现力良好", "宝贝整体录音状态不错，声音再放开一些会更有感染力。"],
+            ["表现力发展中", "宝贝录音时声音偏小或略紧张，建议先熟悉内容再大胆输出。"]
+          ]
+        },
+        focus: {
+          "发音准确度": [
+            ["字母音混淆", "注意区分易混字母音，建立稳定的音形对应。"],
+            ["短元音不稳", "注意短元音发音的准确性，避免和长元音混淆。"],
+            ["长短音区分", "注意区分长元音和短元音，发音时长要更清楚。"],
+            ["组合音识别", "加强常见字母组合音的识别和拼读。"],
+            ["单词重音", "注意多音节单词的重音位置。"],
+            ["尾音处理", "注意单词尾音的清晰发音，避免吞音。"],
+            ["元音饱满", "注意元音发音的饱满度。"],
+            ["辅音清晰", "加强辅音的清晰发音。"],
+            ["辅音连缀", "注意辅音连缀部分不要漏音或加音。"]
+          ],
+          "朗读流畅度": [
+            ["意群停顿", "注意长句的意群划分和合理停顿。"],
+            ["语流自然", "提升语流的自然度，减少逐词朗读感。"],
+            ["语速控制", "朗读时语速可以更平稳，避免过快或过慢。"],
+            ["升降调", "注意一般疑问句和特殊疑问句的升降调变化。"],
+            ["弱读连读", "注意常见功能词的弱读和词与词之间的连读。"],
+            ["标点停顿", "朗读时根据逗号、句号和问号做出停顿和语气变化。"]
+          ],
+          "表达与复述": [
+            ["关键词遗漏", "复述时注意保留关键人物、地点、动作和结果。"],
+            ["情节完整度", "复述故事时注意按照开头、经过、结果的顺序表达。"],
+            ["语法输出", "输出时注意句型结构和时态表达的准确性。"],
+            ["看稿依赖", "可以逐步减少看稿依赖，尝试借助关键词完成输出。"],
+            ["自我纠错", "录音前后可主动检查易错词，提升自我纠错意识。"],
+            ["表达自信", "朗读和复述时声音可以更放开，表达更自信。"]
+          ],
+          "学习状态": [
+            ["端正坐姿", "注意朗读和跟读时的坐姿，保持精神饱满。"],
+            ["任务完整", "注意按照任务要求完整提交，不漏录、不漏读。"],
+            ["录音质量", "录音时尽量选择安静环境，保证声音清晰。"]
+          ]
+        },
+        improve: {
+          "发音专项": [
+            ["跟读三步法", "先听1遍原声，再逐句暂停模仿，最后完整朗读1遍。"],
+            ["错词回读", "把本次读错的3-5个单词单独圈出，每天复读2轮。"],
+            ["尾音训练", "读单词时刻意放慢最后一个音，避免吞掉 /t/ /d/ /s/ 等尾音。"],
+            ["短元音训练", "将易混短元音单词放在一起对比朗读，先慢后快。"],
+            ["组合音卡片", "把本单元字母组合做成小卡片，每天看音读词2轮。"],
+            ["口型模仿", "跟读时观察老师或原声口型，先夸张模仿，再恢复自然语速。"]
+          ],
+          "朗读专项": [
+            ["每日跟读", "每天坚持10-15分钟跟读练习。"],
+            ["多听原声", "多听原声示范材料，跟读薄弱部分。"],
+            ["指读练习", "进行指读练习，将单词形和音对应起来。"],
+            ["标记连读", "建议在文本中标注连读符号，先慢速跟读，找准发音感觉。"],
+            ["标记停顿", "在长句中用斜线标出停顿位置，再按意群朗读。"],
+            ["录音自查", "录完后回听1遍，重点检查尾音、停顿和语调。"],
+            ["熟读再录", "先跟读熟练再完成任务，避免边想边读造成卡顿。"]
+          ],
+          "复述输出": [
+            ["关键词提示", "可借助关键词书写提示，先串联主要信息。"],
+            ["复述支架", "先用关键词串故事，再尝试不用全文看稿复述。"],
+            ["分段背诵", "先按图片或情节分段背诵，再进行完整串联。"],
+            ["角色扮演", "用角色扮演的方式练习对话，让表达更自然。"],
+            ["慢速复述", "复述时先放慢速度，保证句子完整，再逐步提升流畅度。"]
+          ],
+          "工具与习惯": [
+            ["APP辅助", "使用APP辅助发音练习，并重点复听系统提示的薄弱词。"],
+            ["查词熟读", "遇到不熟悉的单词先查读音，再跟读3遍后放入句子中朗读。"],
+            ["任务核对", "提交前核对任务页码、题号和录音内容，避免传错或漏传。"],
+            ["提醒坐姿", "练习时请家长协助提醒宝贝保持端正坐姿。"]
+          ]
+        }
       },
       writing: {
-        performance: [
-          ["全对+工整", "填空全部正确，书写工整漂亮，卷面整洁。"],
-          ["大部分对+工整", "填空大部分正确，书写工整漂亮。"],
-          ["书写发展中", "填空大部分正确，但书写排版美观度需进一步加强，可以做得更好💪"],
-          ["需加强", "填空正确率不高，书写也需要加强。"],
-          ["拼写发展中", "任务完成得不错，但部分单词存在拼写小失误，准确度有待提升。"],
-          ["标点发展中", "书写很认真，但需多加留意句子开头的大写或句末标点，要更加细心哦。"]
-        ],
-        focus: [
-          ["贴近线条", "单词书写时贴近书写线条"],
-          ["间隔均匀", "注意单词间隔均匀"],
-          ["笔顺规范", "注意字母笔顺和占格规范"],
-          ["端正坐姿", "注意书写时的坐姿，做到“一尺一寸一拳”"],
-          ["大小写规范", "重点关注句子首字母大写和专有名词大写"],
-          ["检查标点", "注意句子末尾不要遗漏句号或问号"]
-        ],
-        improve: [
-          ["每日练字", "每天练习10分钟英文书写。"],
-          ["先看后写", "书写前先观察字母结构。"],
-          ["四线练习", "使用四线三格练习本，规范字母书写。"],
-          ["坐姿提醒", "书写时请家长协助提醒宝贝保持端正坐姿，保护视力和脊椎。"],
-          ["拼读记忆", "结合自然拼读法记忆单词，边读边写，避免死记硬背。"],
-          ["写后复查", "完成作业后，养成花2分钟检查拼写和标点的好习惯。"]
-        ]
+        performance: {
+          "字母与单词": [
+            ["全对+工整", "填空全部正确，书写工整漂亮，卷面整洁。"],
+            ["大部分对+工整", "填空大部分正确，书写工整漂亮。"],
+            ["书写发展中", "填空大部分正确，但书写规范度还可以继续提升。"],
+            ["需加强", "填空正确率不高，书写也需要加强。"],
+            ["字母规范优秀", "字母大小写、占格和笔顺都比较规范，书写习惯很好。"],
+            ["字母规范良好", "字母书写整体较规范，个别字母的占格或笔顺需留意。"],
+            ["字母规范发展中", "字母书写规范度还不够稳定，需要继续练习占格和笔顺。"],
+            ["单词拼写优秀", "单词拼写准确率高，书写清楚，能较好完成词汇输出。"],
+            ["单词拼写良好", "大部分单词拼写正确，个别易错词还需加强记忆。"],
+            ["单词拼写发展中", "部分单词存在漏字母或顺序错误，需要加强音形记忆。"]
+          ],
+          "句子与卷面": [
+            ["句子书写优秀", "句子书写完整，大小写和标点使用较规范。"],
+            ["句子书写良好", "句子基本能完整写出，个别大小写、标点或语法细节需注意。"],
+            ["句子书写发展中", "句子书写还需要更多辅助，建议先口头表达再落笔。"],
+            ["卷面优秀", "卷面整洁美观，行距和间距控制得很好。"],
+            ["卷面良好", "卷面整体清楚，个别位置可以写得更整齐。"],
+            ["卷面发展中", "卷面整洁度还需提升，书写时注意对齐和减少涂改。"],
+            ["检查优秀", "宝贝写完后有较好的检查意识，能主动发现并修正问题。"],
+            ["检查良好", "宝贝基本能完成检查，建议继续关注拼写和标点细节。"],
+            ["检查发展中", "宝贝写完后检查意识还需加强，建议养成逐词核对的习惯。"]
+          ]
+        },
+        focus: {
+          "书写规范": [
+            ["贴近线条", "单词书写时贴近书写线条。"],
+            ["间隔均匀", "注意单词间隔均匀，避免挤在一起。"],
+            ["笔顺规范", "注意字母笔顺和占格规范。"],
+            ["大小写", "注意句首大写和专有名词大写。"],
+            ["字母倾斜", "注意字母倾斜方向保持一致。"],
+            ["易混字母", "注意区分 b/d、p/q、m/n 等易混字母。"],
+            ["端正坐姿", "注意书写时的坐姿，做到一尺一寸一拳。"]
+          ],
+          "拼写与语法": [
+            ["漏写字母", "注意检查单词中是否有漏写字母。"],
+            ["多写字母", "注意避免重复书写或多写字母。"],
+            ["字母顺序", "注意单词中字母顺序的准确性。"],
+            ["单复数", "注意名词单复数形式，尤其是词尾 s。"],
+            ["所有格", "注意所有格 's 的书写位置和标点。"],
+            ["句末标点", "句子末尾要补充句号、问号或感叹号。"],
+            ["语法细节", "注意句型中的 be 动词、助动词或时态细节。"]
+          ],
+          "书写习惯": [
+            ["减少涂改", "书写前先想清楚再落笔，减少反复涂改。"],
+            ["对齐行线", "注意每一行书写位置保持整齐。"],
+            ["书写速度", "在保证规范的基础上逐步提高书写速度。"],
+            ["检查意识", "写完后要主动检查拼写、大小写和标点。"]
+          ]
+        },
+        improve: {
+          "书写专项": [
+            ["每日练字", "每天练习10分钟英文书写。"],
+            ["先看后写", "书写前先观察字母结构、占格和笔顺，再开始书写。"],
+            ["四线练习", "使用四线三格练习本，规范字母书写。"],
+            ["慢写提质", "先保证笔顺和占格，再逐步提高书写速度。"],
+            ["坐姿提醒", "书写时请家长协助提醒宝贝保持端正坐姿，保护视力和脊椎。"]
+          ],
+          "拼写专项": [
+            ["易混字母专项", "b/d、p/q 每天各写一行，并边写边读。"],
+            ["拼读记词", "记单词时先读音，再拆音节，最后书写，减少死记硬背。"],
+            ["错词本", "将本次写错的单词整理到错词本，每天遮住中文或图片复写1遍。"],
+            ["听写复盘", "听写后把错词按漏字母、顺序错、大小写错分类整理。"],
+            ["描红仿写", "先观察示例，再描红1遍、仿写2遍，重点看占格和间距。"]
+          ],
+          "检查方法": [
+            ["拼写检查法", "写完后从右往左逐词检查，减少漏字母。"],
+            ["三查法", "写完后检查三项：拼写、大小写、标点。"],
+            ["句子自读", "句子写完后自己小声读一遍，检查是否通顺完整。"],
+            ["任务核对", "提交前核对页码、题号和完成数量，避免漏写。"]
+          ]
+        }
       }
     };
 
@@ -374,17 +481,51 @@
         setTimeout(() => els.notif.classList.add('translate-y-[-150%]'), 2500);
     }
 
+    // 快捷按钮追加文本：重点关注 / 改进建议自动按添加顺序编号
+    function stripLeadingNumber(line) {
+        return String(line)
+            .replace(/^\s*(?:\d+[\.、)）]|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|[0-9]️⃣)\s*/, '')
+            .trim();
+    }
+
+    function getNextNumber(textarea) {
+        const lines = textarea.value.split('\n').map(l => l.trim()).filter(Boolean);
+        return lines.length + 1;
+    }
+
     function appendText(textarea, text) {
-        textarea.value = textarea.value ? (textarea.value + '\n' + text) : text;
+        const shouldAutoNumber = textarea.classList.contains('task-focus') || textarea.classList.contains('task-impr');
+        const rawLines = String(text).split('\n').map(l => stripLeadingNumber(l)).filter(Boolean);
+        let appendLines;
+
+        if (shouldAutoNumber) {
+            let n = getNextNumber(textarea);
+            appendLines = rawLines.map(line => `${n++}. ${line}`);
+        } else {
+            appendLines = rawLines;
+        }
+
+        const current = textarea.value.trim();
+        textarea.value = current ? current + '\n' + appendLines.join('\n') : appendLines.join('\n');
         sync();
         textarea.focus();
     }
 
-    // 生成选项按钮
+    // 生成选项按钮：支持「分组对象」和「普通数组」两种格式
+    function escapeAttr(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     function createOptionBtns(list, textareaSelector, colorClass) {
-        return list.map(([label, text]) => 
-            `<button type="button" class="shortcut-btn ${colorClass}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), '${text}')">${label}</button>`
-        ).join('');
+        const makeBtn = ([label, text]) =>
+            `<button type="button" class="shortcut-btn ${colorClass}" data-text="${escapeAttr(text)}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), this.dataset.text)">${label}</button>`;
+        if (Array.isArray(list)) return list.map(makeBtn).join('');
+        return Object.entries(list).map(([group, items]) => `
+            <div class="w-full mt-2 first:mt-0">
+                <div class="text-[10px] font-black text-slate-400 mb-1 pl-1">${group}</div>
+                <div class="flex flex-wrap gap-2">${items.map(makeBtn).join('')}</div>
+            </div>
+        `).join('');
     }
 
     /* ========================================================
@@ -411,12 +552,12 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">重点关注</label>
+                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">重点关注 <span class="font-normal text-slate-300">自动编号</span></label>
                         <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
                         <textarea class="task-focus input-field" rows="2"></textarea>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">改进建议</label>
+                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">改进建议 <span class="font-normal text-slate-300">自动编号</span></label>
                         <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.improve, '.task-impr', type === 'voice' ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700')}</div>
                         <textarea class="task-impr input-field" rows="2"></textarea>
                     </div>
@@ -463,6 +604,34 @@
         }, 500); 
     }
 
+    function escapeHTML(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // 预览区将自动编号渲染成蓝色数字徽章，下载图片时也会保留颜色
+    function formatNumberedText(value) {
+        const text = String(value || '').trim();
+        if (!text) return '-';
+        const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+        return `<div class="numbered-text">${lines.map(line => {
+            const match = line.match(/^(\d+)[\.、\)）]\s*(.*)$/);
+            if (match) {
+                return `<div class="numbered-line"><span class="num-badge">${escapeHTML(match[1])}</span><span>${escapeHTML(match[2])}</span></div>`;
+            }
+            return `<div class="numbered-line"><span>${escapeHTML(line)}</span></div>`;
+        }).join('')}</div>`;
+    }
+
+    function formatPlainText(value) {
+        const text = String(value || '').trim();
+        return text ? escapeHTML(text).replace(/\n/g, '<br>') : '-';
+    }
+
     function sync() {
         document.getElementById('previewName').textContent = els.studentName.value || '___________';
         document.getElementById('previewDate').textContent = els.classDate.value || '___________';
@@ -486,10 +655,10 @@
             items.forEach((item, idx) => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-50 hover:bg-slate-50/50 transition-colors';
-                const content = item.querySelector('.task-content').value || '-';
-                const perf = item.querySelector('.task-perf').value || '-';
-                const focus = item.querySelector('.task-focus').value || '-';
-                const impr = item.querySelector('.task-impr').value || '-';
+                const content = formatPlainText(item.querySelector('.task-content').value);
+                const perf = formatPlainText(item.querySelector('.task-perf').value);
+                const focus = formatNumberedText(item.querySelector('.task-focus').value);
+                const impr = formatNumberedText(item.querySelector('.task-impr').value);
                 
                 row.innerHTML = `
                     ${idx === 0 ? `<td class="p-3 border-r border-slate-50 font-black text-slate-800 bg-slate-50/50" rowspan="${items.length}">${label}</td>` : ''}
