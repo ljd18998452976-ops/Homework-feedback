@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -31,22 +32,27 @@
       .section-title { @apply text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 border-l-4 border-brand pl-3; }
       .shortcut-btn { @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105 active:scale-95 shadow-sm; }
       .task-item { @apply bg-slate-50 p-5 rounded-2xl mb-6 border border-slate-200 relative; }
-      .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 900px; }
-      .preserve-line-breaks { white-space: pre-line; word-break: normal; overflow-wrap: break-word; word-wrap: break-word; }
+      .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
+      .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
       .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
-      .numbered-line { display: flex; align-items: flex-start; gap: 0.3rem; line-height: 1.75; }
-      .num-badge { display: inline-block; flex: 0 0 auto; min-width: 0.9rem; margin-top: 0.02rem; color: #2563EB; font-size: 0.76rem; font-weight: 950; line-height: 1.75; text-align: right; }
-      .task-card-list { display: flex; flex-direction: column; gap: 0.75rem; }
-      .task-card { border: 1px solid #E2E8F0; border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 6px 18px rgba(15,23,42,.04); }
-      .task-card-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
-      .task-type-pill { flex: 0 0 auto; padding: 0.18rem 0.55rem; border-radius: 999px; background: #EFF6FF; color: #2563EB; font-size: 0.68rem; font-weight: 900; }
-      .task-title { min-width: 0; color: #1E293B; font-weight: 800; font-size: 0.78rem; line-height: 1.6; }
-      .task-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .task-cell { padding: 0.85rem 0.9rem; border-right: 1px solid #F1F5F9; min-width: 0; }
-      .task-cell:last-child { border-right: 0; }
-      .task-cell-label { display: block; margin-bottom: 0.42rem; color: #94A3B8; font-size: 0.62rem; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
-      .task-cell-body { color: #475569; font-size: 0.75rem; line-height: 1.75; }
-      @media (max-width: 720px) { .task-card-grid { grid-template-columns: 1fr; } .task-cell { border-right: 0; border-bottom: 1px solid #F1F5F9; } .task-cell:last-child { border-bottom: 0; } }
+      .numbered-line { display: flex; align-items: flex-start; gap: 0.35rem; line-height: 1.75; }
+      .num-badge { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: 0.9rem; margin-top: 0.02rem; color: #2563EB; font-size: 0.8rem; font-weight: 900; line-height: 1.8; }
+      .feedback-card { border: 1px solid #E2E8F0; border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 10px 24px rgba(15,23,42,.035); }
+      .feedback-card-header { display: flex; align-items: center; gap: 0.75rem; min-height: 3.2rem; padding: 1rem 1.25rem; border-bottom: 1px solid #E2E8F0; background: #F8FAFC; }
+      .feedback-pill { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; padding: 0.28rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 900; }
+      .feedback-pill-voice { background: #EFF6FF; color: #2563EB; }
+      .feedback-pill-writing { background: #ECFDF5; color: #047857; }
+      .feedback-title { font-weight: 900; color: #0F172A; font-size: 0.86rem; line-height: 1.55; word-break: break-word; }
+      .feedback-card-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .feedback-col { min-height: 6.2rem; padding: 0.9rem 1rem; border-right: 1px solid #E2E8F0; }
+      .feedback-col:last-child { border-right: 0; }
+      .feedback-col-title { margin-bottom: 0.65rem; color: #94A3B8; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.03em; }
+      .feedback-col-content { color: #475569; font-size: 0.75rem; line-height: 1.9; word-break: break-all; }
+      @media (max-width: 640px) {
+        .feedback-card-body { grid-template-columns: 1fr; }
+        .feedback-col { border-right: 0; border-bottom: 1px solid #E2E8F0; }
+        .feedback-col:last-child { border-bottom: 0; }
+      }
       
       /* 右侧预览区独立滚动条样式 */
       .preview-scroll-wrapper { @apply overflow-y-auto pr-2; max-height: calc(100vh - 10rem); }
@@ -71,7 +77,7 @@
           <i class="fa fa-file-text-o text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.4 Pro</span></h1>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.7 Pro</span></h1>
           <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
         </div>
       </div>
@@ -224,7 +230,8 @@
                   </div>
                 </div>
 
-                <div id="previewTasksTableBody" class="task-card-list"></div>
+                <div id="previewTasksTableBody" class="space-y-4">
+                </div>
 
                 <div id="previewOtherFeedbackContainer">
                   <h3 class="text-xs font-black mb-3 flex items-center gap-2 text-primary uppercase italic">
@@ -610,7 +617,7 @@
             .replace(/'/g, '&#39;');
     }
 
-    // 预览区将自动编号渲染成蓝色数字徽章，下载图片时也会保留颜色
+    // 预览区将自动编号渲染成蓝色数字，下载图片时也会保留颜色
     function formatNumberedText(value) {
         const text = String(value || '').trim();
         if (!text) return '-';
@@ -649,32 +656,32 @@
         els.previewTable.innerHTML = '';
         const buildRows = (container, label) => {
             const items = container.querySelectorAll('.task-item');
-            items.forEach((item, idx) => {
+            const isWriting = label === '书写';
+            const pillClass = isWriting ? 'feedback-pill-writing' : 'feedback-pill-voice';
+            items.forEach((item) => {
                 const card = document.createElement('div');
-                card.className = 'task-card';
+                card.className = 'feedback-card';
                 const content = formatPlainText(item.querySelector('.task-content').value);
                 const perf = formatPlainText(item.querySelector('.task-perf').value);
                 const focus = formatNumberedText(item.querySelector('.task-focus').value);
                 const impr = formatNumberedText(item.querySelector('.task-impr').value);
-                const typeClass = label === '语音' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700';
-                
                 card.innerHTML = `
-                    <div class="task-card-head">
-                        <span class="task-type-pill ${typeClass}">${label}</span>
-                        <div class="task-title preserve-line-breaks">${content}</div>
+                    <div class="feedback-card-header">
+                        <span class="feedback-pill ${pillClass}">${label}</span>
+                        <div class="feedback-title">${content}</div>
                     </div>
-                    <div class="task-card-grid">
-                        <div class="task-cell">
-                            <span class="task-cell-label">表现记录</span>
-                            <div class="task-cell-body preserve-line-breaks">${perf}</div>
+                    <div class="feedback-card-body">
+                        <div class="feedback-col">
+                            <div class="feedback-col-title">表现记录</div>
+                            <div class="feedback-col-content">${perf}</div>
                         </div>
-                        <div class="task-cell">
-                            <span class="task-cell-label">重点关注</span>
-                            <div class="task-cell-body preserve-line-breaks">${focus}</div>
+                        <div class="feedback-col">
+                            <div class="feedback-col-title">重点关注</div>
+                            <div class="feedback-col-content">${focus}</div>
                         </div>
-                        <div class="task-cell">
-                            <span class="task-cell-label">改进建议</span>
-                            <div class="task-cell-body preserve-line-breaks">${impr}</div>
+                        <div class="feedback-col">
+                            <div class="feedback-col-title">改进建议</div>
+                            <div class="feedback-col-content">${impr}</div>
                         </div>
                     </div>
                 `;
