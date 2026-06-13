@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -31,7 +30,17 @@
       .input-field { @apply w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none text-slate-700 text-sm; }
       .section-title { @apply text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 border-l-4 border-brand pl-3; }
       .shortcut-btn { @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105 active:scale-95 shadow-sm; }
-      .task-item { @apply bg-slate-50 p-5 rounded-2xl mb-6 border border-slate-200 relative; }
+      .task-item { @apply bg-white rounded-2xl mb-4 border border-slate-200 relative overflow-hidden shadow-sm transition-all; }
+      .task-header { @apply w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-all flex items-center justify-between gap-3 text-left; }
+      .task-header-left { @apply flex items-center gap-3 min-w-0; }
+      .task-chip { @apply inline-flex items-center justify-center flex-none px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest; }
+      .task-summary { @apply text-sm font-bold text-slate-700 truncate; }
+      .task-header-actions { @apply flex items-center gap-2 flex-none; }
+      .task-delete { @apply w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center; }
+      .task-arrow { @apply text-slate-400 transition-transform; }
+      .task-item.collapsed .task-body { display: none; }
+      .task-item.collapsed .task-arrow { transform: rotate(-90deg); }
+      .task-body { @apply p-5 border-t border-slate-100; }
       .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
       .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
       .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -77,7 +86,7 @@
           <i class="fa fa-file-text-o text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.7 Pro</span></h1>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.8 Pro</span></h1>
           <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
         </div>
       </div>
@@ -535,19 +544,57 @@
     /* ========================================================
        3. 核心交互：动态添加任务
        ======================================================== */
-    function addTask(type) {
+    function refreshTaskHeader(item) {
+        const type = item.dataset.taskType || 'voice';
+        const idx = Array.from(item.parentElement.children).indexOf(item) + 1;
+        const content = item.querySelector('.task-content')?.value.trim();
+        const perf = item.querySelector('.task-perf')?.value.trim();
+        const fallback = content || perf || '点击展开编辑任务内容';
+        const typeText = type === 'voice' ? 'Voice' : 'Writing';
+        const summary = item.querySelector('.task-summary');
+        const chip = item.querySelector('.task-chip');
+        if (chip) chip.textContent = `${typeText} Task #${idx}`;
+        if (summary) summary.textContent = fallback;
+    }
+
+    function toggleTask(button) {
+        const item = button.closest('.task-item');
+        item.classList.toggle('collapsed');
+    }
+
+    function setTaskCollapsed(item, collapsed) {
+        item.classList.toggle('collapsed', collapsed);
+    }
+
+    /* ========================================================
+       3. 核心交互：动态添加任务
+       ======================================================== */
+    function addTask(type, open = true) {
         const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
         const config = TASK_OPTIONS[type];
         const idx = container.children.length + 1;
         const div = document.createElement('div');
-        div.className = `task-item border-l-4 ${type === 'voice' ? 'border-brand' : 'border-success'}`;
+        div.className = `task-item border-l-4 ${type === 'voice' ? 'border-brand' : 'border-success'} ${open ? '' : 'collapsed'}`;
+        div.dataset.taskType = type;
         
         div.innerHTML = `
-            <button class="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors" onclick="if(confirm('删除此项吗?')){this.closest('.task-item').remove();sync();}"><i class="fa fa-times-circle text-xl"></i></button>
-            <div class="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest mb-4 ${type === 'voice' ? 'bg-blue-100 text-brand' : 'bg-emerald-100 text-success'}">
-                ${type === 'voice' ? 'Voice' : 'Writing'} Task #${idx}
+            <div class="task-header">
+                <button type="button" class="task-header-left flex-1" onclick="toggleTask(this)">
+                    <span class="task-chip ${type === 'voice' ? 'bg-blue-100 text-brand' : 'bg-emerald-50 text-success'}">
+                        ${type === 'voice' ? 'Voice' : 'Writing'} Task #${idx}
+                    </span>
+                    <span class="task-summary">点击展开编辑任务内容</span>
+                </button>
+                <div class="task-header-actions">
+                    <button type="button" class="task-delete" title="删除任务" onclick="if(confirm('删除此项吗?')){this.closest('.task-item').remove();sync();}">
+                        <i class="fa fa-times-circle text-lg"></i>
+                    </button>
+                    <button type="button" class="task-delete" title="展开/收起" onclick="toggleTask(this)">
+                        <i class="fa fa-chevron-down task-arrow"></i>
+                    </button>
+                </div>
             </div>
-            <div class="space-y-4">
+            <div class="task-body space-y-4">
                 <div><label class="text-[10px] font-bold text-slate-400 mb-1 block">具体任务内容</label><textarea class="task-content input-field" rows="2"></textarea></div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 mb-2 block">完成表现 (点击快捷输入)</label>
@@ -570,6 +617,7 @@
         `;
         container.appendChild(div);
         div.querySelectorAll('textarea').forEach(t => t.oninput = sync);
+        refreshTaskHeader(div);
         sync();
     }
 
@@ -653,6 +701,8 @@
         document.getElementById('previewClassProgressText').textContent = `${cur.toFixed(1)} / ${tot.toFixed(1)} (Hours)`;
         document.getElementById('previewClassProgressBar').style.width = pct + '%';
 
+        document.querySelectorAll('.task-item').forEach(refreshTaskHeader);
+
         els.previewTable.innerHTML = '';
         const buildRows = (container, label) => {
             const items = container.querySelectorAll('.task-item');
@@ -711,7 +761,7 @@
         const loadTasks = (items, type) => {
             if (items && items.length > 0) {
                 items.forEach(item => {
-                    addTask(type);
+                    addTask(type, false);
                     const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
                     const last = container.lastElementChild;
                     if(last) {
@@ -722,7 +772,7 @@
                     }
                 });
             } else {
-                addTask(type);
+                addTask(type, true);
             }
         };
 
