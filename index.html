@@ -54,6 +54,10 @@
       .option-group-body { @apply px-3 pb-3; }
       .option-group.collapsed .option-group-body { display: none; }
       .option-group.collapsed .option-group-arrow { transform: rotate(-90deg); }
+      .pron-quick-box { @apply border border-blue-100 bg-blue-50/40 rounded-xl p-3 space-y-2; }
+      .pron-quick-title { @apply text-[11px] font-black text-blue-700 flex items-center gap-2; }
+      .pron-mini-input { @apply px-3 py-1.5 bg-white border border-blue-100 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 text-slate-700; }
+      .pron-chip { @apply px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-blue-700 border border-blue-100 shadow-sm hover:bg-blue-100 transition-all active:scale-95; }
       .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
       .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
       .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -99,7 +103,7 @@
           <i class="fa fa-file-text-o text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v5.1 Pro</span></h1>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v5.3 Pro</span></h1>
           <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
         </div>
       </div>
@@ -755,6 +759,56 @@
         groups.forEach(group => group.classList.toggle('collapsed', !expand));
     }
 
+    function normalizePronIssue(raw) {
+        const value = String(raw || '').trim();
+        if (!value) return '';
+        if (/音|发音|重音|尾音|连读|弱读|浊化|饱满|拉长|嘴型|舌尖|卷舌|清楚|区分/.test(value)) return value;
+        return `${value} 音需要再留意`;
+    }
+
+    function appendPronIssue(button, issueText) {
+        const item = button.closest('.task-item');
+        const wordInput = item.querySelector('.pron-word-input');
+        const customInput = item.querySelector('.pron-custom-input');
+        const focusArea = item.querySelector('.task-focus');
+        const word = (wordInput?.value || '').trim();
+        const issue = normalizePronIssue(issueText || customInput?.value || '');
+        if (!word && !issue) {
+            notify('先输入单词和问题音哦', 'error');
+            return;
+        }
+        const line = word && issue ? `${word} ➡ ${issue}；` : (word ? `${word} ➡ 发音细节需要再留意；` : `${issue}；`);
+        appendText(focusArea, line);
+        if (wordInput) wordInput.value = '';
+        if (customInput && !issueText) customInput.value = '';
+        refreshTaskHeader(item);
+    }
+
+    function appendPronBulk(button) {
+        const item = button.closest('.task-item');
+        const bulk = item.querySelector('.pron-bulk-input');
+        const focusArea = item.querySelector('.task-focus');
+        const raw = (bulk?.value || '').trim();
+        if (!raw) {
+            notify('先粘贴错音内容哦', 'error');
+            return;
+        }
+        const lines = raw
+            .split(/[\n；;]+/)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => {
+                const parts = s.split(/=>|➡|->|→|=|：|:/);
+                const word = (parts[0] || '').trim();
+                const issue = normalizePronIssue(parts.slice(1).join(':').trim());
+                if (word && issue) return `${word} ➡ ${issue}；`;
+                return s.endsWith('；') || s.endsWith(';') ? s.replace(/;$/, '；') : `${s}；`;
+            });
+        appendText(focusArea, lines.join('\n'));
+        if (bulk) bulk.value = '';
+        refreshTaskHeader(item);
+    }
+
     /* ========================================================
        3. 核心交互：动态添加任务
        ======================================================== */
@@ -808,6 +862,30 @@
                             </div>
                         </div>
                         <div class="mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
+                        ${type === 'voice' ? `
+                        <div class="pron-quick-box mb-2">
+                            <div class="pron-quick-title"><i class="fa fa-bolt"></i> 错音速记</div>
+                            <div class="flex flex-wrap gap-2 items-center">
+                                <input type="text" class="pron-mini-input pron-word-input w-28" placeholder="单词 water">
+                                <input type="text" class="pron-mini-input pron-custom-input flex-1 min-w-[160px]" placeholder="自定义：a 音再饱满一些">
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this)">加入</button>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'a 音再饱满一些')">a饱满</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'a 音再拉长一些')">a拉长</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'ar 音要更清楚')">ar清楚</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'er 音注意卷舌')">er卷舌</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'th 音注意咬舌')">th咬舌</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, '尾音不要吞掉')">尾音</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, '重音位置需要再留意')">重音</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'st 中 t 音可弱化，听感接近 sd')">st/sd</button>
+                                <button type="button" class="pron-chip" onclick="appendPronIssue(this, '连读需要更自然')">连读</button>
+                            </div>
+                            <div class="flex flex-wrap gap-2 items-start">
+                                <textarea class="pron-mini-input pron-bulk-input flex-1 min-w-[220px]" rows="2" placeholder="批量：water=a音再饱满；afternoon=a音再拉长"></textarea>
+                                <button type="button" class="pron-chip mt-1" onclick="appendPronBulk(this)">批量加入</button>
+                            </div>
+                        </div>` : ''}
                         <textarea class="task-focus input-field" rows="2"></textarea>
                     </div>
                     <div class="option-block">
