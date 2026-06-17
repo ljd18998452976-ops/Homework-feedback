@@ -103,7 +103,7 @@
      <i class="fa fa-file-text-o text-lg"></i>
     </div>
     <div>
-     <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v5.7 Pro</span></h1>
+     <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v5.8 Pro</span></h1>
      <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
     </div>
    </div>
@@ -380,6 +380,26 @@
       ["表现力优秀", "录音状态积极，声音清楚有精神，表达自信大方。"],
       ["表现力良好", "整体录音状态不错，声音再放开一些会更有感染力。"],
       ["表现力发展中", "录音时声音偏小或略紧张，建议先熟悉内容再大胆输出。"]
+     ],
+     "程度缓和表达": [
+      ["整体不错+个别", "整体完成情况不错，个别单词或字母音还需要再巩固。"],
+      ["大部分准确", "大部分内容能够准确完成，少数发音细节还需要继续练习。"],
+      ["部分不稳", "部分单词或字母音的反应还不够稳定，后续可以继续进行针对性巩固。"],
+      ["偶尔混淆", "整体识读情况可以，偶尔会混淆个别字母音或目标音。"],
+      ["少数集中", "问题主要集中在少数几个单词或字母上，整体方向是正确的。"],
+      ["需提示完成", "能完成基础任务，部分内容需要借助提示后才能更准确地输出。"],
+      ["稳定性提升", "目前不是整体不会，而是准确性和稳定性还需要进一步提升。"],
+      ["细节再调整", "整体朗读比较顺畅，个别元音、尾音或重音细节还可以再调整。"]
+     ],
+     "程度缓和表达": [
+      ["整体不错+个别", "整体完成情况不错，个别字母、单词或书写细节还需要再巩固。"],
+      ["大部分规范", "大部分内容书写比较规范，少数字母占格或笔顺还需要继续留意。"],
+      ["部分不稳", "部分字母或单词的书写稳定性还不够高，后续可以继续进行针对性练习。"],
+      ["偶尔出错", "整体书写情况可以，偶尔会在个别字母、拼写或标点上出现小问题。"],
+      ["少数集中", "问题主要集中在少数几个字母或单词上，整体完成方向是正确的。"],
+      ["需提示完成", "能完成基础书写任务，部分内容需要借助提示后才能写得更准确。"],
+      ["稳定性提升", "目前不是整体不会，而是书写规范和检查稳定性还需要进一步提升。"],
+      ["细节再调整", "整体卷面比较清楚，个别占格、间距或对齐细节还可以再调整。"]
      ],
      "任务提交情况": [
       ["任务已完成", "本次任务已按要求提交，老师已完成检查与反馈。"],
@@ -886,6 +906,27 @@
                 <button type="button" class="pron-chip mt-1" onclick="appendPronBulk(this)">批量加入</button>
               </div>
             </div>` : ''}
+            ${type === 'voice' ? `
+            <div class="pron-quick-box mb-2">
+              <div class="pron-quick-title"><i class="fa fa-sliders"></i> 程度缓和速记</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '整体完成情况不错，个别单词或字母音还需要再巩固。')">整体不错+个别</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '大部分内容能够准确完成，少数发音细节还需要继续练习。')">大部分准确</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '问题主要集中在少数几个单词或字母上，整体方向是正确的。')">少数集中</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '目前不是整体不会，而是准确性和稳定性还需要进一步提升。')">稳定性提升</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '能完成基础任务，部分内容需要借助提示后才能更准确地输出。')">需提示完成</button>
+              </div>
+            </div>` : `
+            <div class="pron-quick-box mb-2">
+              <div class="pron-quick-title"><i class="fa fa-sliders"></i> 程度缓和速记</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '整体完成情况不错，个别字母、单词或书写细节还需要再巩固。')">整体不错+个别</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '大部分内容书写比较规范，少数字母占格或笔顺还需要继续留意。')">大部分规范</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '问题主要集中在少数几个字母或单词上，整体完成方向是正确的。')">少数集中</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '目前不是整体不会，而是书写规范和检查稳定性还需要进一步提升。')">稳定性提升</button>
+                <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '能完成基础书写任务，部分内容需要借助提示后才能写得更准确。')">需提示完成</button>
+              </div>
+            </div>`}
             <textarea class="task-focus input-field" rows="2"></textarea>
           </div>
           <div class="option-block">
