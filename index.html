@@ -41,6 +41,19 @@
       .task-item.collapsed .task-body { display: none; }
       .task-item.collapsed .task-arrow { transform: rotate(-90deg); }
       .task-body { @apply p-5 border-t border-slate-100; }
+      .option-block { @apply space-y-2; }
+      .option-section-title { @apply flex items-center justify-between gap-3 flex-wrap; }
+      .option-mini-actions { @apply flex items-center gap-2 text-[10px]; }
+      .option-mini-btn { @apply text-slate-400 hover:text-brand transition-colors font-bold; }
+      .option-groups { @apply space-y-2; }
+      .option-group { @apply border border-slate-200 rounded-xl bg-slate-50/60 overflow-hidden; }
+      .option-group-toggle { @apply w-full px-3 py-2 flex items-center justify-between gap-3 text-left hover:bg-white transition-colors; }
+      .option-group-title { @apply text-[11px] font-black text-slate-500; }
+      .option-group-meta { @apply text-[10px] text-slate-400 font-medium; }
+      .option-group-arrow { @apply text-slate-400 transition-transform flex-none; }
+      .option-group-body { @apply px-3 pb-3; }
+      .option-group.collapsed .option-group-body { display: none; }
+      .option-group.collapsed .option-group-arrow { transform: rotate(-90deg); }
       .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
       .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
       .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -86,7 +99,7 @@
           <i class="fa fa-file-text-o text-lg"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v4.8 Pro</span></h1>
+          <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v5.1 Pro</span></h1>
           <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
         </div>
       </div>
@@ -681,16 +694,29 @@
         return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    function buildOptionButton(item, textareaSelector, colorClass) {
+        const [label, text] = item;
+        return `<button type="button" class="shortcut-btn ${colorClass}" data-text="${escapeAttr(text)}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), this.dataset.text)">${label}</button>`;
+    }
+
     function createOptionBtns(list, textareaSelector, colorClass) {
-        const makeBtn = ([label, text]) =>
-            `<button type="button" class="shortcut-btn ${colorClass}" data-text="${escapeAttr(text)}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), this.dataset.text)">${label}</button>`;
-        if (Array.isArray(list)) return list.map(makeBtn).join('');
-        return Object.entries(list).map(([group, items]) => `
-            <div class="w-full mt-2 first:mt-0">
-                <div class="text-[10px] font-black text-slate-400 mb-1 pl-1">${group}</div>
-                <div class="flex flex-wrap gap-2">${items.map(makeBtn).join('')}</div>
+        if (Array.isArray(list)) {
+            return `<div class="flex flex-wrap gap-2">${list.map(item => buildOptionButton(item, textareaSelector, colorClass)).join('')}</div>`;
+        }
+        return `<div class="option-groups">${Object.entries(list).map(([group, items]) => `
+            <div class="option-group collapsed">
+                <button type="button" class="option-group-toggle" onclick="toggleOptionGroup(this)">
+                    <div class="min-w-0">
+                        <span class="option-group-title">${group}</span>
+                        <span class="option-group-meta">（${items.length}项）</span>
+                    </div>
+                    <i class="fa fa-chevron-down option-group-arrow"></i>
+                </button>
+                <div class="option-group-body">
+                    <div class="flex flex-wrap gap-2">${items.map(item => buildOptionButton(item, textareaSelector, colorClass)).join('')}</div>
+                </div>
             </div>
-        `).join('');
+        `).join('')}</div>`;
     }
 
     /* ========================================================
@@ -716,6 +742,17 @@
 
     function setTaskCollapsed(item, collapsed) {
         item.classList.toggle('collapsed', collapsed);
+    }
+
+    function toggleOptionGroup(button) {
+        const group = button.closest('.option-group');
+        if (group) group.classList.toggle('collapsed');
+    }
+
+    function toggleOptionArea(button, expand) {
+        const block = button.closest('.option-block');
+        const groups = block ? block.querySelectorAll('.option-group') : [];
+        groups.forEach(group => group.classList.toggle('collapsed', !expand));
     }
 
     /* ========================================================
@@ -748,20 +785,41 @@
             </div>
             <div class="task-body space-y-4">
                 <div><label class="text-[10px] font-bold text-slate-400 mb-1 block">具体任务内容</label><textarea class="task-content input-field" rows="2"></textarea></div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 mb-2 block">完成表现 (点击快捷输入)</label>
-                    <div class="flex flex-wrap gap-2 mb-2">${createOptionBtns(config.performance, '.task-perf', type === 'voice' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700')}</div>
+                <div class="option-block">
+                    <div class="option-section-title">
+                        <label class="text-[10px] font-bold text-slate-400 block">完成表现 (点击快捷输入)</label>
+                        <div class="option-mini-actions">
+                            <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
+                            <span class="text-slate-200">|</span>
+                            <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
+                        </div>
+                    </div>
+                    <div class="mb-2">${createOptionBtns(config.performance, '.task-perf', type === 'voice' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700')}</div>
                     <textarea class="task-perf input-field" rows="2"></textarea>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">重点关注 <span class="font-normal text-slate-300">自动编号</span></label>
-                        <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
+                    <div class="option-block">
+                        <div class="option-section-title">
+                            <label class="text-[10px] font-bold text-slate-400 block">重点关注 <span class="font-normal text-slate-300">自动编号</span></label>
+                            <div class="option-mini-actions">
+                                <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
+                                <span class="text-slate-200">|</span>
+                                <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
+                            </div>
+                        </div>
+                        <div class="mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
                         <textarea class="task-focus input-field" rows="2"></textarea>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-2 block">改进建议 <span class="font-normal text-slate-300">自动编号</span></label>
-                        <div class="flex flex-wrap gap-1 mb-2">${createOptionBtns(config.improve, '.task-impr', type === 'voice' ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700')}</div>
+                    <div class="option-block">
+                        <div class="option-section-title">
+                            <label class="text-[10px] font-bold text-slate-400 block">改进建议 <span class="font-normal text-slate-300">自动编号</span></label>
+                            <div class="option-mini-actions">
+                                <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
+                                <span class="text-slate-200">|</span>
+                                <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
+                            </div>
+                        </div>
+                        <div class="mb-2">${createOptionBtns(config.improve, '.task-impr', type === 'voice' ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700')}</div>
                         <textarea class="task-impr input-field" rows="2"></textarea>
                     </div>
                 </div>
