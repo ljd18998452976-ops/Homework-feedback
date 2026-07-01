@@ -103,7 +103,7 @@
  <i class="fa fa-file-text-o text-lg"></i>
  </div>
  <div>
- <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v6.1 Pro</span></h1>
+ <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v6.3 Pro</span></h1>
  <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
  </div>
  </div>
@@ -501,7 +501,7 @@
  ],
  "单词发音专项": [
  ["跟读三步法", "先听1遍原声，再逐句暂停模仿，最后完整朗读1遍。"],
- ["错词回读", "把本次读错的3-5个单词单独圈出，每天复读2轮。"],
+ ["错词回读", "把本次读错的单词单独圈出，每天复读2轮。"],
  ["尾音训练", "读单词时刻意放慢最后一个音，避免吞掉 /t/ /d/ /s/ 等尾音。"],
  ["短元音训练", "将易混短元音单词放在一起对比朗读，先慢后快。"],
  ["重音拍手", "读多音节单词时在重读音节轻拍一下，帮助固定重音位置。"],
@@ -864,6 +864,56 @@
  refreshTaskHeader(item);
  }
 
+ function normalizeWritingIssue(raw) {
+ const value = String(raw || '').trim();
+ if (!value) return '';
+ if (/书写|占格|笔顺|大小写|间距|标点|点|漏写|多写|顺序|贴线|对齐|倾斜|单复数|所有格|格式/.test(value)) return value;
+ return `${value} 需要再留意`;
+ }
+
+ function appendWritingIssue(button, issueText) {
+ const item = button.closest('.task-item');
+ const targetInput = item.querySelector('.writing-target-input');
+ const customInput = item.querySelector('.writing-custom-input');
+ const focusArea = item.querySelector('.task-focus');
+ const target = (targetInput?.value || '').trim();
+ const issue = normalizeWritingIssue(issueText || customInput?.value || '');
+ if (!target && !issue) {
+ notify('先输入字母/单词和问题点哦', 'error');
+ return;
+ }
+ const line = target && issue ? `${target} ➡ ${issue}；` : (target ? `${target} ➡ 书写细节需要再留意；` : `${issue}；`);
+ appendText(focusArea, line);
+ if (targetInput) targetInput.value = '';
+ if (customInput && !issueText) customInput.value = '';
+ refreshTaskHeader(item);
+ }
+
+ function appendWritingBulk(button) {
+ const item = button.closest('.task-item');
+ const bulk = item.querySelector('.writing-bulk-input');
+ const focusArea = item.querySelector('.task-focus');
+ const raw = (bulk?.value || '').trim();
+ if (!raw) {
+ notify('先粘贴书写问题内容哦', 'error');
+ return;
+ }
+ const lines = raw
+ .split(/[\n；;]+/)
+ .map(s => s.trim())
+ .filter(Boolean)
+ .map(s => {
+ const parts = s.split(/=>|➡|->|→|=|：|:/);
+ const target = (parts[0] || '').trim();
+ const issue = normalizeWritingIssue(parts.slice(1).join(':').trim());
+ if (target && issue) return `${target} ➡ ${issue}；`;
+ return s.endsWith('；') || s.endsWith(';') ? s.replace(/;$/, '；') : `${s}；`;
+ });
+ appendText(focusArea, lines.join('\n'));
+ if (bulk) bulk.value = '';
+ refreshTaskHeader(item);
+ }
+
  /* ========================================================
  3. 核心交互：动态添加任务
  ======================================================== */
@@ -941,7 +991,31 @@
  <textarea class="pron-mini-input pron-bulk-input flex-1 min-w-[220px]" rows="2" placeholder="批量：water=a音再饱满；afternoon=a音再拉长"></textarea>
  <button type="button" class="pron-chip mt-1" onclick="appendPronBulk(this)">批量加入</button>
  </div>
- </div>` : ''}
+ </div>` : `
+ <div class="pron-quick-box mb-2">
+ <div class="pron-quick-title"><i class="fa fa-pencil"></i> 书写速记</div>
+ <div class="flex flex-wrap gap-2 items-center">
+ <input type="text" class="pron-mini-input writing-target-input w-28" placeholder="字母/单词 a">
+ <input type="text" class="pron-mini-input writing-custom-input flex-1 min-w-[160px]" placeholder="自定义：书写按书写体会更好">
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this)">加入</button>
+ </div>
+ <div class="flex flex-wrap gap-1.5">
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '书写按书写体会更好')">书写体</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '占格需要再留意')">占格</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '笔顺需要再规范')">笔顺</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '点轻点一下即可')">点轻点</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '单词间隔保持均匀')">间隔</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '贴近线条书写')">贴线</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '大小写需要再留意')">大小写</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '字母顺序需要再检查')">顺序</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '注意不要漏写字母')">漏写</button>
+ <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '句末标点需要补充完整')">标点</button>
+ </div>
+ <div class="flex flex-wrap gap-2 items-start">
+ <textarea class="pron-mini-input writing-bulk-input flex-1 min-w-[220px]" rows="2" placeholder="批量：a=按书写体；i=点轻点；nose=漏写s"></textarea>
+ <button type="button" class="pron-chip mt-1" onclick="appendWritingBulk(this)">批量加入</button>
+ </div>
+ </div>`}
  ${type === 'voice' ? `
  <div class="pron-quick-box mb-2">
  <div class="pron-quick-title"><i class="fa fa-sliders"></i> 程度缓和速记</div>
