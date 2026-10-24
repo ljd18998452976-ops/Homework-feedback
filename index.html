@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -132,6 +133,14 @@
     .section-accent.red { background: var(--red); }
     .section-accent.violet { background: var(--violet); }
     .section-accent.green { background: var(--green); }
+    .feedback-picker { margin: 0 0 14px; padding: 12px; border: 1px solid #d9e2f2; border-radius: 12px; background: #f6f9ff; }
+    .feedback-picker legend { padding: 0 5px; color: var(--blue-deep); font-size: 12px; font-weight: 800; }
+    .feedback-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+    .feedback-choice { padding: 7px 10px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid #dae1ec; border-radius: 8px; background: white; cursor: pointer; }
+    .feedback-choice:has(input:checked) { border-color: #9bb3e1; color: var(--blue-deep); background: var(--blue-soft); }
+    .feedback-choice input { width: 15px; height: 15px; margin: 0; padding: 0; accent-color: var(--blue); }
+    .feedback-picker p { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+    .feedback-extra { grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); }
 
     .quick-row { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
     .quick-chip { padding: 4px 8px; border: 1px solid #d9e1ed; border-radius: 7px; color: #506078; background: white; cursor: pointer; font-size: 10px; }
@@ -140,6 +149,11 @@
     .record-builder { padding: 12px; border: 1px solid #ead3d5; border-radius: 12px; background: #fffafa; }
     .record-builder-grid { display: grid; grid-template-columns: .7fr 1.1fr .75fr 1.4fr auto; gap: 7px; align-items: center; }
     .record-builder.pron { border-color: #d6dfef; background: #f9fbff; }
+    .record-builder.recall { border-color: #ddd5ee; background: #faf8ff; }
+    .recall-builder-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr) auto; gap: 7px; align-items: end; }
+    .recall-builder-grid .field + .field { margin-top: 0; }
+    .recall-help { margin: 0 0 10px; color: #7b6b91; font-size: 11px; }
+    .record-item.recall-item { grid-template-columns: minmax(0,1fr) minmax(0,1.6fr) auto; }
     .record-list { margin-top: 9px; display: grid; gap: 7px; }
     .record-empty { padding: 10px; border: 1px dashed #d8dee8; border-radius: 9px; color: #9aa3b2; background: #fafbfc; font-size: 10px; text-align: center; }
     .record-item { padding: 8px 9px; display: grid; grid-template-columns: minmax(120px,.8fr) minmax(100px,.75fr) minmax(160px,1.45fr) auto; gap: 7px; align-items: center; border: 1px solid #e2e7ef; border-radius: 10px; background: white; }
@@ -227,6 +241,9 @@
     .focus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .focus-card { padding: 11px 12px; border: 1px solid #e1e6ee; border-radius: 11px; background: #fbfcfe; }
     .focus-card.full { grid-column: 1 / -1; }
+    .focus-card.recall-card { border-color: #ddd5ee; background: #faf8ff; }
+    .recall-card .focus-card-title { color: var(--violet); }
+    .recall-description { margin-bottom: 8px; color: #82758f; font-size: 9px; }
     .focus-card-title { margin-bottom: 6px; color: #6a768b; font-size: 9px; font-weight: 900; }
     .focus-card-content { color: #445168; font-size: 10px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
     .bullet-line { display: flex; align-items: flex-start; gap: 6px; }
@@ -282,6 +299,10 @@
       .grid-2, .focus-grid { grid-template-columns: 1fr; }
       .focus-card.full { grid-column: auto; }
       .record-builder-grid, .record-item, .short-grid { grid-template-columns: 1fr; }
+      .recall-builder-grid { grid-template-columns: 1fr; }
+      .record-item.recall-item { grid-template-columns: minmax(0,1fr) auto; }
+      .recall-item .record-note { grid-column: 1; grid-row: 2; }
+      .recall-item .record-remove { grid-column: 2; grid-row: 1 / 3; }
       .report-content { padding: 18px 15px 21px; }
       .report-cover { padding: 23px 20px 20px; }
       .report-meta { grid-template-columns: 1fr 1fr; }
@@ -314,7 +335,7 @@
       <div class="brand">
         <div class="brand-mark">B</div>
         <div>
-          <h1>课堂与课后综合反馈编辑器 <span style="color:#7fa7ff;font-size:10px">v7.0</span></h1>
+          <h1>课堂与课后综合反馈编辑器 <span style="color:#7fa7ff;font-size:10px">v7.2</span></h1>
           <p>CLASSROOM &amp; HOMEWORK FEEDBACK · OFFLINE</p>
         </div>
       </div>
@@ -378,12 +399,27 @@
           <div class="panel-head">
             <div class="panel-title">
               <span class="panel-index">03</span>
-              <div><h2>课堂学习反馈</h2><p>记录本节课现场表现；课堂语法与上节课作业问题分开呈现</p></div>
+              <div><h2>课堂学习反馈</h2><p>按本节课实际情况勾选，有需要再填写</p></div>
             </div>
           </div>
           <div class="panel-body">
-            <div class="soft-box">
-              <div class="soft-box-title"><strong><span class="section-accent red"></span>单词拼写／拆分／默写</strong><span class="hint">可指定单词中的易错部分标红</span></div>
+            <fieldset class="feedback-picker" aria-describedby="feedbackPickerHelp">
+              <legend>本节需要记录的项目</legend>
+              <div class="feedback-choices">
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="spelling">单词拼写</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="splitting">单词拆分</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="dictation">单词默写</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="pronunciation">单词发音</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="recall">单词回溯</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="grammar">课堂语法与知识点</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="performance">课堂表现概况</label>
+                <label class="feedback-choice"><input type="checkbox" data-feedback-toggle="remarks">课堂备注</label>
+              </div>
+              <p id="feedbackPickerHelp">勾选后展开填写；仅已勾选且有内容的项目会进入反馈单。取消勾选会保留已填内容，再次勾选即可恢复。</p>
+            </fieldset>
+            <div class="record-empty" id="feedbackEmpty">本节暂无需要记录的课堂反馈，可按需勾选上方项目。</div>
+            <div class="soft-box hidden" data-feedback-section="spellingGroup">
+              <div class="soft-box-title"><strong><span class="section-accent red"></span><span id="spellingSectionTitle">单词拼写／拆分／默写</span></strong><span class="hint">可指定单词中的易错部分标红</span></div>
               <div class="record-builder">
                 <div class="record-builder-grid">
                   <select id="spellingType" aria-label="记录类型"><option>拼写</option><option>拆分</option><option>默写</option></select>
@@ -397,7 +433,7 @@
               <div class="record-list" id="spellingList"></div>
             </div>
 
-            <div class="soft-box">
+            <div class="soft-box hidden" data-feedback-section="pronunciation">
               <div class="soft-box-title"><strong><span class="section-accent red"></span>单词发音</strong><span class="hint">只标红发音需要关注的字母或音节部分</span></div>
               <div class="record-builder pron">
                 <div class="record-builder-grid" style="grid-template-columns:1.1fr .8fr 1.7fr auto">
@@ -411,7 +447,20 @@
               <div class="record-list" id="pronList"></div>
             </div>
 
-            <div class="soft-box">
+            <div class="soft-box hidden" data-feedback-section="recall">
+              <div class="soft-box-title"><strong id="recallTitle"><span class="section-accent violet"></span>单词回溯</strong><span class="hint">以前学过、现在遗忘的完整单词</span></div>
+              <div class="record-builder recall" role="group" aria-labelledby="recallTitle" aria-describedby="recallHelp">
+                <p class="recall-help" id="recallHelp">记录曾经学过但现在忘记的单词，包括词义、拼写、读音或整体记忆。每次加入一个完整单词，备注可不填。</p>
+                <div class="recall-builder-grid">
+                  <div class="field"><label for="recallWord">完整单词</label><input id="recallWord" placeholder="例如：elephant" autocomplete="off"></div>
+                  <div class="field"><label for="recallNote">回溯备注（可选）</label><input id="recallNote" placeholder="例如：之前学过，今天已忘记词义"></div>
+                  <button class="btn btn-small btn-primary" id="addRecall" type="button">加入词汇</button>
+                </div>
+              </div>
+              <div class="record-list" id="recallList"></div>
+            </div>
+
+            <div class="soft-box hidden" data-feedback-section="grammar">
               <div class="soft-box-title"><strong><span class="section-accent violet"></span>课堂语法与知识点反馈</strong><span class="hint">仅写本节课堂中暴露、需要课后关注的语法问题</span></div>
               <textarea id="grammarPoints" data-classroom="grammar" placeholder="例如：&#10;使用 have got / has got 时，需要先判断句子主语。&#10;名词复数词尾 -s 在表达和书写中都需要保留。"></textarea>
               <div class="quick-row">
@@ -422,8 +471,8 @@
               </div>
             </div>
 
-            <div class="grid-2" style="margin-top:12px">
-              <div class="soft-box" style="margin:0">
+            <div class="grid-2 feedback-extra hidden" id="feedbackExtra" style="margin-top:12px">
+              <div class="soft-box hidden" data-feedback-section="performance" style="margin:0">
                 <div class="soft-box-title"><strong><span class="section-accent green"></span>课堂表现概况</strong><span class="hint">可选</span></div>
                 <textarea id="classPerformance" data-classroom="performance" placeholder="例如：课堂参与积极，能够主动回答问题；遇到不确定内容时还需要更多独立思考。"></textarea>
                 <div class="quick-row">
@@ -432,7 +481,7 @@
                   <button class="quick-chip" data-append="classPerformance" data-text="部分内容需要提示后才能完成，独立反应速度还可以继续提升。" type="button">需要提示</button>
                 </div>
               </div>
-              <div class="soft-box" style="margin:0">
+              <div class="soft-box hidden" data-feedback-section="remarks" style="margin:0">
                 <div class="soft-box-title"><strong><span class="section-accent"></span>课堂备注</strong><span class="hint">可选</span></div>
                 <textarea id="classRemarks" data-classroom="remarks" placeholder="补充课堂状态、教材页码、需家长知晓的特殊情况等。"></textarea>
               </div>
@@ -494,7 +543,10 @@
     (() => {
       'use strict';
 
+      // Retain the v7 storage key so existing local drafts can be read by this update.
       const STORAGE_KEY = 'bobo_classroom_homework_feedback_v7_final_autosave';
+      const SPELLING_TYPES = { spelling:'拼写', splitting:'拆分', dictation:'默写' };
+      const FEEDBACK_KEYS = ['spelling','splitting','dictation','pronunciation','recall','grammar','performance','remarks'];
       const KIND = {
         voice: { key: 'v', label: '语音', short: '语', list: 'voiceTasks', count: 'voiceCount' },
         writing: { key: 'w', label: '书写', short: '写', list: 'writingTasks', count: 'writingCount' }
@@ -631,7 +683,7 @@
 
       const state = {
         n:'', d:'', c:'', u:'', cur:'', tot:'', b1:'BOBOspeak英语工作室', b2:'让英语不止是学科，更是未来竞争力！',
-        classroom: { mainTasks:'', keyPoints:'', spelling:[], pronunciation:[], grammar:'', performance:'', remarks:'' },
+        classroom: { mainTasks:'', keyPoints:'', spelling:[], pronunciation:[], recall:[], grammar:'', performance:'', remarks:'' },
         f:'', v:[], w:[], activeKind:'voice'
       };
 
@@ -653,14 +705,20 @@
       }
       function newTask(seed={}) { return { id:seed.id||uid('t'), t:String(seed.t??seed.title??''), p:String(seed.p??seed.performance??''), f:String(seed.f??seed.focus??''), i:String(seed.i??seed.improve??seed.advice??''), open:seed.open!==false }; }
       function newRecord(seed={}, prefix='r') { return { id:seed.id||uid(prefix), type:String(seed.type||''), word:String(seed.word||seed.target||''), part:String(seed.part||seed.highlight||''), note:String(seed.note||seed.issue||'') }; }
+      function newRecallRecord(seed={}) {
+        const item=typeof seed==='string'?{word:seed}:(seed&&typeof seed==='object'?seed:{});
+        return { id:String(item.id||uid('recall')), word:String(item.word??item.target??'').trim(), note:String(item.note??item.issue??'').trim() };
+      }
 
       function cloneState() {
         return {
-          version:'7.0-offline', exportedAt:new Date().toISOString(),
+          version:'7.2-offline', exportedAt:new Date().toISOString(),
           n:state.n, d:state.d, c:state.c, u:state.u, cur:state.cur, tot:state.tot, b1:state.b1, b2:state.b2,
           classroom:{
             mainTasks:state.classroom.mainTasks, keyPoints:state.classroom.keyPoints,
             spelling:state.classroom.spelling.map(r=>({...r})), pronunciation:state.classroom.pronunciation.map(r=>({...r})),
+            recall:state.classroom.recall.map(r=>({...r})),
+            enabled:{...state.classroom.enabled},
             grammar:state.classroom.grammar, performance:state.classroom.performance, remarks:state.classroom.remarks
           },
           f:state.f, v:state.v.map(({id,t,p,f,i})=>({id,t,p,f,i})), w:state.w.map(({id,t,p,f,i})=>({id,t,p,f,i}))
@@ -677,7 +735,9 @@
           cur:pick(src.cur,src.currentClass), tot:pick(src.tot,src.totalClass), b1:pick(src.b1,src.bottomText1,'BOBOspeak英语工作室'), b2:pick(src.b2,src.bottomText2,'让英语不止是学科，更是未来竞争力！'),
           classroom:{
             mainTasks:pick(cls.mainTasks,src.mainTasks), keyPoints:pick(cls.keyPoints,src.keyPoints),
+            enabled:cls.enabled,
             spelling:arr(cls.spelling,src.spellingRecords).map(x=>newRecord(x,'s')), pronunciation:arr(cls.pronunciation,src.pronunciationRecords).map(x=>newRecord(x,'p')),
+            recall:arr(cls.recall,src.recallRecords).map(newRecallRecord).filter(r=>r.word),
             grammar:pick(cls.grammar,src.grammar), performance:pick(cls.performance,src.classPerformance), remarks:pick(cls.remarks,src.classRemarks)
           },
           f:pick(src.f,src.teacherFeedback,src.otherFeedback),
@@ -692,8 +752,10 @@
         state.classroom={
           mainTasks:String(next.classroom?.mainTasks||''), keyPoints:String(next.classroom?.keyPoints||''),
           spelling:(next.classroom?.spelling||[]).map(x=>newRecord(x,'s')), pronunciation:(next.classroom?.pronunciation||[]).map(x=>newRecord(x,'p')),
+          recall:(next.classroom?.recall||[]).map(newRecallRecord).filter(r=>r.word),
           grammar:String(next.classroom?.grammar||''), performance:String(next.classroom?.performance||''), remarks:String(next.classroom?.remarks||'')
         };
+        state.classroom.enabled=normalizeFeedbackEnabled(next.classroom?.enabled,state.classroom);
         state.v=(next.v||[]).map(newTask); state.w=(next.w||[]).map(newTask); state.activeKind=next.activeKind==='writing'?'writing':'voice';
       }
 
@@ -701,17 +763,22 @@
         const now=new Date();
         state.n=''; state.c=''; state.u=''; state.cur=''; state.tot=''; state.b1='BOBOspeak英语工作室'; state.b2='让英语不止是学科，更是未来竞争力！';
         state.d=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
-        state.classroom={mainTasks:'',keyPoints:'',spelling:[],pronunciation:[],grammar:'',performance:'',remarks:''};
+        state.classroom={mainTasks:'',keyPoints:'',spelling:[],pronunciation:[],recall:[],grammar:'',performance:'',remarks:''};
+        state.classroom.enabled=normalizeFeedbackEnabled(null,state.classroom);
         state.f=''; state.v=[]; state.w=[]; state.activeKind='voice';
       }
 
       function saveLocal() {
         clearTimeout(saveTimer);
         $('#saveState').textContent='正在保存…';
-        saveTimer=setTimeout(()=>{
-          try { localStorage.setItem(STORAGE_KEY,JSON.stringify(cloneState())); $('#saveState').textContent='已在本机自动保存'; }
-          catch(e) { $('#saveState').textContent='本机保存受限'; }
-        },220);
+        saveTimer=setTimeout(flushLocalSave,220);
+      }
+
+      function flushLocalSave() {
+        if(saveTimer===null) return;
+        clearTimeout(saveTimer); saveTimer=null;
+        try { localStorage.setItem(STORAGE_KEY,JSON.stringify(cloneState())); $('#saveState').textContent='已在本机自动保存'; }
+        catch(e) { $('#saveState').textContent='本机保存受限，请导出备份'; }
       }
 
       function loadLocal() {
@@ -728,6 +795,44 @@
         $$('[data-meta]').forEach(el=>el.value=state[el.dataset.meta]||'');
         $('#keyPoints').value=state.classroom.keyPoints; $('#grammarPoints').value=state.classroom.grammar;
         $('#classPerformance').value=state.classroom.performance; $('#classRemarks').value=state.classroom.remarks; $('#teacherFeedback').value=state.f;
+        syncFeedbackSections();
+      }
+
+      function spellingKey(record) {
+        return record.type==='拆分'?'splitting':record.type==='默写'?'dictation':'spelling';
+      }
+
+      function normalizeFeedbackEnabled(saved,cls) {
+        // Older backups have no switches: enable exactly the sections containing data.
+        const inferred={
+          spelling:cls.spelling.some(r=>spellingKey(r)==='spelling'),
+          splitting:cls.spelling.some(r=>spellingKey(r)==='splitting'),
+          dictation:cls.spelling.some(r=>spellingKey(r)==='dictation'),
+          pronunciation:cls.pronunciation.length>0, recall:cls.recall.length>0,
+          grammar:!!cls.grammar.trim(), performance:!!cls.performance.trim(), remarks:!!cls.remarks.trim()
+        };
+        return Object.fromEntries(FEEDBACK_KEYS.map(key=>[key,typeof saved?.[key]==='boolean'?saved[key]:inferred[key]]));
+      }
+
+      function visibleSpellingRecords() {
+        return state.classroom.spelling.filter(record=>state.classroom.enabled[spellingKey(record)]);
+      }
+
+      function syncFeedbackSections() {
+        const enabled=state.classroom.enabled;
+        const selectedTypes=Object.keys(SPELLING_TYPES).filter(key=>enabled[key]);
+        $$('[data-feedback-toggle]').forEach(control=>control.checked=enabled[control.dataset.feedbackToggle]);
+        $$('[data-feedback-section]').forEach(section=>{
+          const key=section.dataset.feedbackSection;
+          section.classList.toggle('hidden',key==='spellingGroup'?!selectedTypes.length:!enabled[key]);
+        });
+        $('#feedbackEmpty').classList.toggle('hidden',FEEDBACK_KEYS.some(key=>enabled[key]));
+        $('#feedbackExtra').classList.toggle('hidden',!enabled.performance&&!enabled.remarks);
+        const select=$('#spellingType'), previous=select.value;
+        select.innerHTML=selectedTypes.map(key=>`<option>${SPELLING_TYPES[key]}</option>`).join('');
+        if(selectedTypes.some(key=>SPELLING_TYPES[key]===previous)) select.value=previous;
+        $('#spellingSectionTitle').textContent='单词'+selectedTypes.map(key=>SPELLING_TYPES[key]).join('／');
+        renderRecordEditor('spelling');
       }
 
       function highlightedWord(word, parts) {
@@ -746,7 +851,7 @@
       }
 
       function renderRecordEditor(type) {
-        const list=type==='spelling'?state.classroom.spelling:state.classroom.pronunciation;
+        const list=type==='spelling'?visibleSpellingRecords():state.classroom.pronunciation;
         const root=$(type==='spelling'?'#spellingList':'#pronList');
         if(!list.length){ root.innerHTML='<div class="record-empty">还没有记录；需要时填写上方内容再点击“加入”。</div>'; return; }
         root.innerHTML=list.map(r=>`
@@ -779,6 +884,32 @@
         return `<details class="library"><summary>快捷评语库</summary><div class="option-groups">${Object.entries(groups).map(([name,items])=>`
           <details class="option-group"><summary><span>${escapeHTML(name)}</span><span class="hint">${items.length}项</span></summary>
           <div class="options">${items.map(([label,text])=>`<button class="option-btn" type="button" data-option="${escapeHTML(text)}">${escapeHTML(label)}</button>`).join('')}</div></details>`).join('')}</div></details>`;
+      }
+
+      function renderRecallEditor() {
+        const root=$('#recallList');
+        root.innerHTML=state.classroom.recall.length?state.classroom.recall.map((record,index)=>`
+          <div class="record-item recall-item">
+            <div class="record-word-preview">${escapeHTML(record.word)}</div>
+            <div class="record-note">${escapeHTML(record.note||'曾学过，需重新巩固')}</div>
+            <button class="record-remove" type="button" data-recall-index="${index}" title="删除单词" aria-label="删除回溯单词 ${escapeHTML(record.word)}">×</button>
+          </div>`).join(''):'<div class="record-empty">暂无回溯单词；填写完整单词后点击“加入词汇”。</div>';
+        $$('[data-recall-index]',root).forEach(btn=>btn.addEventListener('click',()=>{
+          state.classroom.recall.splice(Number(btn.dataset.recallIndex),1);
+          renderRecallEditor(); renderPreview(); saveLocal();
+        }));
+      }
+
+      function addRecallRecord() {
+        const word=$('#recallWord').value.trim(), note=$('#recallNote').value.trim();
+        if(!word){ showToast('请先填写需要回溯的完整单词'); $('#recallWord').focus(); return; }
+        state.classroom.recall.push(newRecallRecord({word,note}));
+        $('#recallWord').value=''; $('#recallNote').value='';
+        renderRecallEditor(); renderPreview(); saveLocal(); $('#recallWord').focus();
+      }
+
+      function renderRecallRecords() {
+        return `<div class="class-records">${state.classroom.recall.map(record=>`<div class="class-record"><div class="class-record-head"><span class="class-word">${escapeHTML(record.word)}</span></div>${record.note?`<div class="class-note">${escapeHTML(record.note)}</div>`:''}</div>`).join('')}</div>`;
       }
 
       function renderShortBox(kind) {
@@ -867,7 +998,9 @@
 
       function renderPreview() {
         const hasClassCore=state.classroom.keyPoints.trim();
-        const hasClassFeedback=state.classroom.spelling.length||state.classroom.pronunciation.length||state.classroom.grammar.trim()||state.classroom.performance.trim()||state.classroom.remarks.trim();
+        const enabled=state.classroom.enabled, spellingRecords=visibleSpellingRecords();
+        const spellingTitle='单词'+Object.keys(SPELLING_TYPES).filter(key=>spellingRecords.some(r=>spellingKey(r)===key)).map(key=>SPELLING_TYPES[key]).join('／');
+        const hasClassFeedback=spellingRecords.length||(enabled.pronunciation&&state.classroom.pronunciation.length)||(enabled.recall&&state.classroom.recall.length)||(enabled.grammar&&state.classroom.grammar.trim())||(enabled.performance&&state.classroom.performance.trim())||(enabled.remarks&&state.classroom.remarks.trim());
         const hasHomework=state.v.length||state.w.length;
         const cur=parseFloat(state.cur)||0, tot=parseFloat(state.tot)||0, pct=tot>0?Math.min(100,Math.round(cur/tot*100)):0;
         $('#preview').innerHTML=`
@@ -876,11 +1009,12 @@
             <div class="report-meta">${[['Student / 姓名',state.n||'—'],['Class / 班级',state.c||'—'],['Date / 日期',formatDate(state.d)],['Unit / 单元',state.u||'—']].map(([l,v])=>`<div class="meta-cell"><div class="meta-label">${escapeHTML(l)}</div><div class="meta-value">${escapeHTML(v)}</div></div>`).join('')}</div>
             ${hasClassCore?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">课</div><div class="report-section-title">本节重点知识点 <small>Today's Key Learning</small></div></div><div class="focus-grid"><div class="focus-card full"><div class="focus-card-title">课后重点消化</div><div class="focus-card-content">${renderBullets(state.classroom.keyPoints)}</div></div></div></section>`:''}
             ${hasClassFeedback?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">评</div><div class="report-section-title">课堂学习反馈 <small>Classroom Feedback</small></div></div><div class="focus-grid">
-              ${state.classroom.spelling.length?`<div class="focus-card"><div class="focus-card-title">单词拼写／拆分／默写</div><div class="focus-card-content">${renderClassRecords(state.classroom.spelling)}</div></div>`:''}
-              ${state.classroom.pronunciation.length?`<div class="focus-card"><div class="focus-card-title">单词发音</div><div class="focus-card-content">${renderClassRecords(state.classroom.pronunciation)}</div></div>`:''}
-              ${state.classroom.grammar.trim()?`<div class="focus-card full"><div class="focus-card-title">课堂语法与知识点</div><div class="focus-card-content">${renderBullets(state.classroom.grammar)}</div></div>`:''}
-              ${state.classroom.performance.trim()?`<div class="focus-card"><div class="focus-card-title">课堂表现概况</div><div class="focus-card-content">${renderPlain(state.classroom.performance)}</div></div>`:''}
-              ${state.classroom.remarks.trim()?`<div class="focus-card"><div class="focus-card-title">课堂备注</div><div class="focus-card-content">${renderPlain(state.classroom.remarks)}</div></div>`:''}
+              ${spellingRecords.length?`<div class="focus-card"><div class="focus-card-title">${spellingTitle}</div><div class="focus-card-content">${renderClassRecords(spellingRecords)}</div></div>`:''}
+              ${enabled.pronunciation&&state.classroom.pronunciation.length?`<div class="focus-card"><div class="focus-card-title">单词发音</div><div class="focus-card-content">${renderClassRecords(state.classroom.pronunciation)}</div></div>`:''}
+              ${enabled.recall&&state.classroom.recall.length?`<div class="focus-card full recall-card"><div class="focus-card-title">单词回溯</div><div class="recall-description">以前学过、现在遗忘的单词，需重新复习巩固。</div><div class="focus-card-content">${renderRecallRecords()}</div></div>`:''}
+              ${enabled.grammar&&state.classroom.grammar.trim()?`<div class="focus-card full"><div class="focus-card-title">课堂语法与知识点</div><div class="focus-card-content">${renderBullets(state.classroom.grammar)}</div></div>`:''}
+              ${enabled.performance&&state.classroom.performance.trim()?`<div class="focus-card"><div class="focus-card-title">课堂表现概况</div><div class="focus-card-content">${renderPlain(state.classroom.performance)}</div></div>`:''}
+              ${enabled.remarks&&state.classroom.remarks.trim()?`<div class="focus-card"><div class="focus-card-title">课堂备注</div><div class="focus-card-content">${renderPlain(state.classroom.remarks)}</div></div>`:''}
             </div></section>`:''}
             ${hasHomework?`<section class="report-section homework"><div class="report-section-head"><div class="report-section-icon">后</div><div class="report-section-title">上节课课后任务反馈 <small>Previous Homework</small></div></div><div class="homework-list">${renderHomework('voice')}${renderHomework('writing')}</div></section>`:''}
             <section class="teacher-note"><div class="teacher-note-head"><div class="teacher-note-title">本节课后辅导提示</div><div class="teacher-note-en">Guidance for Home Review</div></div><div class="teacher-note-content">${state.f.trim()?escapeHTML(state.f.trim()):'请结合本节课堂重点、标红内容以及上节课任务建议进行针对性复习。'}</div></section>
@@ -895,7 +1029,7 @@
 
       async function importJSON(file) {
         if(!file) return;
-        try { const parsed=JSON.parse(await file.text()); applyState(normalizeBackup(parsed)); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderTasks(); renderPreview(); saveLocal(); showToast('备份已导入；旧版语音和书写任务已兼容'); }
+        try { const parsed=JSON.parse(await file.text()); applyState(normalizeBackup(parsed)); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderRecallEditor(); $('#recallWord').value=''; $('#recallNote').value=''; renderTasks(); renderPreview(); saveLocal(); showToast('备份已导入；兼容新版单词回溯及旧版备份'); }
         catch(e) { showToast('导入失败，请确认文件为有效 JSON 备份'); }
         finally { $('#importFile').value=''; }
       }
@@ -908,19 +1042,26 @@
           const stage=document.createElement('div'); stage.className='capture-stage'; stage.appendChild(clone); document.body.appendChild(stage);
           const width=900, height=Math.ceil(clone.scrollHeight);
           const css=Array.from(document.styleSheets).map(sheet=>{try{return Array.from(sheet.cssRules).map(r=>r.cssText).join('\n')}catch(e){return''}}).join('\n');
-          const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;background:#fff"><style>${css}</style>${clone.outerHTML}</div></foreignObject></svg>`;
-          const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'})); const img=new Image(); await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
-          const scale=2, canvas=document.createElement('canvas'); canvas.width=width*scale; canvas.height=height*scale; const ctx=canvas.getContext('2d'); ctx.scale(scale,scale); ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0,width,height); URL.revokeObjectURL(url); stage.remove();
+          const reportXML=new XMLSerializer().serializeToString(clone);
+          const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;background:#fff"><style>${escapeHTML(css)}</style>${reportXML}</div></foreignObject></svg>`;
+          const img=new Image(); await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+          const scale=2, canvas=document.createElement('canvas'); canvas.width=width*scale; canvas.height=height*scale; const ctx=canvas.getContext('2d'); ctx.scale(scale,scale); ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0,width,height); stage.remove();
           const blob=await new Promise(res=>canvas.toBlob(res,'image/png',1)); if(!blob) throw new Error('PNG'); downloadBlob(blob,filename('课堂与课后学习反馈单','png')); showToast('反馈图片已生成');
         } catch(e) { $('.capture-stage')?.remove(); showToast('当前浏览器生成图片受限，可使用“打印”保存为 PDF'); }
         finally { btn.disabled=false; btn.innerHTML=old; }
       }
 
       function bind() {
+        $$('[data-feedback-toggle]').forEach(control=>control.addEventListener('change',()=>{
+          state.classroom.enabled[control.dataset.feedbackToggle]=control.checked;
+          syncFeedbackSections(); renderPreview(); saveLocal();
+        }));
         $$('[data-meta]').forEach(el=>el.addEventListener('input',()=>{state[el.dataset.meta]=el.value;renderPreview();saveLocal()}));
         $$('[data-classroom]').forEach(el=>el.addEventListener('input',()=>{state.classroom[el.dataset.classroom]=el.value;renderPreview();saveLocal()}));
         $('#teacherFeedback').addEventListener('input',e=>{state.f=e.target.value;renderPreview();saveLocal()});
         $('#addSpelling').addEventListener('click',()=>addClassRecord('spelling')); $('#addPron').addEventListener('click',()=>addClassRecord('pronunciation'));
+        $('#addRecall').addEventListener('click',addRecallRecord);
+        ['recallWord','recallNote'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();addRecallRecord()}}));
         ['spellingNote','pronNote'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addClassRecord(id==='spellingNote'?'spelling':'pronunciation')}}));
         PRON_PRESETS.forEach(([label,text])=>{ const btn=document.createElement('button'); btn.type='button'; btn.className='quick-chip'; btn.textContent=label; btn.addEventListener('click',()=>{$('#pronNote').value=text;$('#pronPart').focus()}); $('#pronQuickRow').appendChild(btn); });
         $$('[data-append]').forEach(btn=>btn.addEventListener('click',()=>{const area=document.getElementById(btn.dataset.append);area.value=appendText(area.value,btn.dataset.text,false);area.dispatchEvent(new Event('input',{bubbles:true}))}));
@@ -928,11 +1069,13 @@
         $$('.task-tab').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.kind))); $$('.add-task').forEach(btn=>btn.addEventListener('click',()=>addTask(btn.dataset.kind)));
         $('#exportBtn').addEventListener('click',exportJSON); $('#importBtn').addEventListener('click',()=>$('#importFile').click()); $('#importFile').addEventListener('change',e=>importJSON(e.target.files[0]));
         $('#printBtn').addEventListener('click',()=>window.print()); $('#imageBtn').addEventListener('click',exportImage);
-        $('#resetBtn').addEventListener('click',()=>{if(!confirm('确定清空当前全部内容吗？建议先导出备份。'))return;setDefaults();syncInputs();switchTab('voice');renderRecordEditor('spelling');renderRecordEditor('pronunciation');renderTasks();renderPreview();localStorage.removeItem(STORAGE_KEY);saveLocal();showToast('已清空，可开始填写新的反馈')});
+        $('#resetBtn').addEventListener('click',()=>{if(!confirm('确定清空当前全部内容吗？建议先导出备份。'))return;setDefaults();syncInputs();switchTab('voice');renderRecordEditor('spelling');renderRecordEditor('pronunciation');renderRecallEditor();$('#recallWord').value='';$('#recallNote').value='';renderTasks();renderPreview();saveLocal();flushLocalSave();showToast('已清空，可开始填写新的反馈')});
+        window.addEventListener('pagehide',flushLocalSave);
+        document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden') flushLocalSave()});
       }
 
       function init() {
-        setDefaults(); loadLocal(); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderTasks(); renderPreview(); bind();
+        setDefaults(); loadLocal(); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderRecallEditor(); renderTasks(); renderPreview(); bind();
       }
       init();
     })();
