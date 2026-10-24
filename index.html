@@ -1,1365 +1,941 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>BOBOspeak 反馈报告生成器 Pro Max</title>
- <script src="https://cdn.tailwindcss.com"></script>
- <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
- <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
- 
- <script>
- tailwind.config = {
- theme: {
- extend: {
- colors: {
- primary: '#1E293B', /* 商务深蓝 */
- brand: '#3B82F6', /* 品牌蓝 */
- success: '#10B981', /* 成功绿 */
- accent: '#F8FAFC', /* 背景底色 */
- },
- borderRadius: { '2xl': '1rem' }
- },
- }
- }
- </script>
- 
- <style type="text/tailwindcss">
- @layer utilities {
- .editor-card { @apply bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-6 transition-all; }
- .input-field { @apply w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand transition-all outline-none text-slate-700 text-sm; }
- .section-title { @apply text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 border-l-4 border-brand pl-3; }
- .shortcut-btn { @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105 active:scale-95 shadow-sm; }
- .task-item { @apply bg-white rounded-2xl mb-4 border border-slate-200 relative overflow-hidden shadow-sm transition-all; }
- .task-header { @apply w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-all flex items-center justify-between gap-3 text-left; }
- .task-header-left { @apply flex items-center gap-3 min-w-0; }
- .task-chip { @apply inline-flex items-center justify-center flex-none px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest; }
- .task-summary { @apply text-sm font-bold text-slate-700 truncate; }
- .task-header-actions { @apply flex items-center gap-2 flex-none; }
- .task-delete { @apply w-8 h-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center; }
- .task-arrow { @apply text-slate-400 transition-transform; }
- .task-item.collapsed .task-body { display: none; }
- .task-item.collapsed .task-arrow { transform: rotate(-90deg); }
- .task-body { @apply p-5 border-t border-slate-100; }
- .option-block { @apply space-y-2; }
- .option-section-title { @apply flex items-center justify-between gap-3 flex-wrap; }
- .option-mini-actions { @apply flex items-center gap-2 text-[10px]; }
- .option-mini-btn { @apply text-slate-400 hover:text-brand transition-colors font-bold; }
- .option-groups { @apply space-y-2; }
- .option-group { @apply border border-slate-200 rounded-xl bg-slate-50/60 overflow-hidden; }
- .option-group-toggle { @apply w-full px-3 py-2 flex items-center justify-between gap-3 text-left hover:bg-white transition-colors; }
- .option-group-title { @apply text-[11px] font-black text-slate-500; }
- .option-group-meta { @apply text-[10px] text-slate-400 font-medium; }
- .option-group-arrow { @apply text-slate-400 transition-transform flex-none; }
- .option-group-body { @apply px-3 pb-3; }
- .option-group.collapsed .option-group-body { display: none; }
- .option-group.collapsed .option-group-arrow { transform: rotate(-90deg); }
- .pron-quick-box { @apply border border-blue-100 bg-blue-50/40 rounded-xl p-3 space-y-2; }
- .pron-quick-title { @apply text-[11px] font-black text-blue-700 flex items-center gap-2; }
- .pron-mini-input { @apply px-3 py-1.5 bg-white border border-blue-100 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 text-slate-700; }
- .pron-chip { @apply px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-blue-700 border border-blue-100 shadow-sm hover:bg-blue-100 transition-all active:scale-95; }
- .preview-sheet { @apply bg-white shadow-2xl mx-auto overflow-hidden; width: 100%; max-width: 800px; }
- .preserve-line-breaks { white-space: pre-line; word-break: break-all; }
- .numbered-text { display: flex; flex-direction: column; gap: 0.35rem; }
- .numbered-line { display: flex; align-items: flex-start; gap: 0.35rem; line-height: 1.75; }
- .num-badge { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: 0.9rem; margin-top: 0.02rem; color: #2563EB; font-size: 0.8rem; font-weight: 900; line-height: 1.8; }
- .feedback-card { border: 1px solid #E2E8F0; border-radius: 1rem; overflow: hidden; background: #fff; box-shadow: 0 10px 24px rgba(15,23,42,.035); }
- .feedback-card-header { display: flex; align-items: center; gap: 0.75rem; min-height: 3.2rem; padding: 1rem 1.25rem; border-bottom: 1px solid #E2E8F0; background: #F8FAFC; }
- .feedback-pill { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; padding: 0.28rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 900; }
- .feedback-pill-voice { background: #EFF6FF; color: #2563EB; }
- .feedback-pill-writing { background: #ECFDF5; color: #047857; }
- .feedback-title { font-weight: 900; color: #0F172A; font-size: 0.86rem; line-height: 1.55; word-break: break-word; }
- .feedback-card-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
- .feedback-col { min-height: 6.2rem; padding: 0.9rem 1rem; border-right: 1px solid #E2E8F0; }
- .feedback-col:last-child { border-right: 0; }
- .feedback-col-title { margin-bottom: 0.65rem; color: #94A3B8; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.03em; }
- .feedback-col-content { color: #475569; font-size: 0.75rem; line-height: 1.9; word-break: break-all; }
- @media (max-width: 640px) {
- .feedback-card-body { grid-template-columns: 1fr; }
- .feedback-col { border-right: 0; border-bottom: 1px solid #E2E8F0; }
- .feedback-col:last-child { border-bottom: 0; }
- }
- 
- /* 右侧预览区独立滚动条样式 */
- .preview-scroll-wrapper { @apply overflow-y-auto pr-2; max-height: calc(100vh - 10rem); }
- .preview-scroll-wrapper::-webkit-scrollbar { width: 8px; }
- .preview-scroll-wrapper::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px; }
- .preview-scroll-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f8fafc; }
- .preview-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
- 
- /* 全局默认滚动条 */
- ::-webkit-scrollbar { width: 6px; }
- ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
- }
- </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>BOBOspeak 课堂与课后综合反馈单 · 离线版</title>
+  <style>
+    :root {
+      --navy: #18243b;
+      --navy-2: #233454;
+      --blue: #3b68c4;
+      --blue-deep: #294f9f;
+      --blue-soft: #edf3ff;
+      --green: #4e816c;
+      --green-soft: #edf7f2;
+      --amber: #b77722;
+      --amber-soft: #fff7e9;
+      --red: #c9444d;
+      --red-soft: #fff0f1;
+      --violet: #705bb3;
+      --violet-soft: #f3efff;
+      --ink: #19243a;
+      --text: #465269;
+      --muted: #7b879c;
+      --line: #dfe5ee;
+      --line-strong: #cbd4e1;
+      --canvas: #f2f5f9;
+      --paper: #fff;
+      --shadow-sm: 0 3px 12px rgba(25, 38, 63, .06);
+      --shadow: 0 18px 50px rgba(25, 38, 63, .13);
+      --radius: 16px;
+      --font: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    .hidden { display: none !important; }
+
+    .topbar {
+      position: sticky;
+      z-index: 50;
+      top: 0;
+      border-bottom: 1px solid rgba(203, 212, 225, .78);
+      color: white;
+      background: rgba(24, 36, 59, .98);
+      box-shadow: 0 7px 22px rgba(17, 27, 46, .16);
+    }
+    .topbar-inner {
+      width: min(1520px, calc(100% - 32px));
+      min-height: 74px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 43px; height: 43px; display: grid; flex: 0 0 auto; place-items: center;
+      border-radius: 13px; color: white; background: var(--blue);
+      box-shadow: 0 8px 20px rgba(59, 104, 196, .35); font-size: 18px; font-weight: 900;
+    }
+    .brand h1 { margin: 0; font-size: 17px; line-height: 1.35; }
+    .brand p { margin: 2px 0 0; color: #9fafc9; font-size: 10px; letter-spacing: .12em; }
+    .top-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+    .sync-state { margin-right: 4px; display: flex; align-items: center; gap: 7px; color: #aebbd0; font-size: 11px; }
+    .sync-state::before { width: 7px; height: 7px; border-radius: 50%; background: #65b28d; content: ""; }
+
+    .btn {
+      min-height: 37px; padding: 7px 12px; display: inline-flex; align-items: center; justify-content: center;
+      gap: 7px; border: 1px solid var(--line-strong); border-radius: 10px; color: #3e4b62;
+      background: white; cursor: pointer; transition: .16s ease; box-shadow: 0 1px 2px rgba(20, 31, 51, .03);
+    }
+    .btn:hover { border-color: #9eacc0; color: var(--blue-deep); background: #f8faff; }
+    .btn:active { transform: translateY(1px); }
+    .topbar .btn { border-color: rgba(255,255,255,.15); color: #dae3f1; background: rgba(255,255,255,.07); }
+    .topbar .btn:hover { border-color: rgba(255,255,255,.3); color: white; background: rgba(255,255,255,.12); }
+    .btn-primary { border-color: var(--blue); color: white; background: var(--blue); }
+    .btn-primary:hover { border-color: var(--blue-deep); color: white; background: var(--blue-deep); }
+    .btn-green { border-color: var(--green); color: white; background: var(--green); }
+    .btn-green:hover { border-color: #3f6c59; color: white; background: #3f6c59; }
+    .btn-danger { border-color: #efd1d4; color: var(--red); background: var(--red-soft); }
+    .btn-small { min-height: 31px; padding: 4px 9px; border-radius: 8px; font-size: 11px; }
+    .btn-ghost { border-color: transparent; color: var(--muted); background: transparent; box-shadow: none; }
+
+    .workspace { width: min(1520px, calc(100% - 32px)); margin: 22px auto 44px; }
+    .workspace-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(450px, .92fr); gap: 22px; align-items: start; }
+    .editor-pane, .preview-pane { min-width: 0; }
+    .preview-pane { position: sticky; top: 96px; }
+    .panel { margin-bottom: 16px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow-sm); }
+    .panel-head { padding: 15px 17px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .panel-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .panel-index { width: 29px; height: 29px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 9px; color: var(--blue-deep); background: var(--blue-soft); font-size: 11px; font-weight: 900; }
+    .panel-title h2 { margin: 0; font-size: 15px; line-height: 1.35; }
+    .panel-title p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+    .panel-body { padding: 17px; }
+    .panel.classroom { border-top: 4px solid var(--blue); }
+    .panel.homework { border-top: 4px solid var(--green); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field + .field { margin-top: 13px; }
+    .grid-2 .field + .field, .grid-4 .field + .field { margin-top: 0; }
+    label, .field-label { color: #4d5b73; font-size: 11px; font-weight: 800; }
+    .hint { color: #929bad; font-size: 10px; font-weight: 400; }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; outline: 0;
+      color: var(--ink); background: white; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    input, select { height: 39px; padding: 8px 10px; }
+    textarea { min-height: 86px; padding: 10px 11px; resize: vertical; line-height: 1.7; }
+    input::placeholder, textarea::placeholder { color: #a5adbb; }
+    input:focus, textarea:focus, select:focus { border-color: #829fda; background: #fcfdff; box-shadow: 0 0 0 3px rgba(59,104,196,.1); }
+    .soft-box { padding: 13px; border: 1px solid #e5e9f0; border-radius: 12px; background: #fbfcfe; }
+    .soft-box + .soft-box { margin-top: 12px; }
+    .soft-box-title { margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .soft-box-title strong { font-size: 12px; }
+    .section-accent { width: 8px; height: 8px; display: inline-block; margin-right: 7px; border-radius: 3px; background: var(--blue); }
+    .section-accent.red { background: var(--red); }
+    .section-accent.violet { background: var(--violet); }
+    .section-accent.green { background: var(--green); }
+
+    .quick-row { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .quick-chip { padding: 4px 8px; border: 1px solid #d9e1ed; border-radius: 7px; color: #506078; background: white; cursor: pointer; font-size: 10px; }
+    .quick-chip:hover { border-color: #aebfdf; color: var(--blue-deep); background: var(--blue-soft); }
+
+    .record-builder { padding: 12px; border: 1px solid #ead3d5; border-radius: 12px; background: #fffafa; }
+    .record-builder-grid { display: grid; grid-template-columns: .7fr 1.1fr .75fr 1.4fr auto; gap: 7px; align-items: center; }
+    .record-builder.pron { border-color: #d6dfef; background: #f9fbff; }
+    .record-list { margin-top: 9px; display: grid; gap: 7px; }
+    .record-empty { padding: 10px; border: 1px dashed #d8dee8; border-radius: 9px; color: #9aa3b2; background: #fafbfc; font-size: 10px; text-align: center; }
+    .record-item { padding: 8px 9px; display: grid; grid-template-columns: minmax(120px,.8fr) minmax(100px,.75fr) minmax(160px,1.45fr) auto; gap: 7px; align-items: center; border: 1px solid #e2e7ef; border-radius: 10px; background: white; }
+    .record-word-preview { min-width: 0; color: #26344d; font-size: 12px; font-weight: 900; overflow-wrap: anywhere; }
+    mark.issue-mark { padding: 0 1px; color: var(--red); background: #ffe1e3; border-radius: 3px; font-weight: 900; }
+    .record-note { color: #617087; font-size: 10px; overflow-wrap: anywhere; }
+    .record-tag { padding: 2px 6px; display: inline-block; border-radius: 5px; color: #8b5c1d; background: var(--amber-soft); font-size: 9px; font-weight: 800; }
+    .record-remove { width: 29px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 8px; color: #a7afbc; background: transparent; cursor: pointer; }
+    .record-remove:hover { color: var(--red); background: var(--red-soft); }
+    .red-help { margin-top: 7px; color: #8d6670; font-size: 10px; }
+
+    .task-tabs { padding: 5px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; border: 1px solid var(--line); border-radius: 12px; background: #f2f5f9; }
+    .task-tab { min-height: 38px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 800; }
+    .task-tab.active[data-kind="voice"] { color: var(--blue); background: white; box-shadow: 0 2px 8px rgba(37,57,92,.08); }
+    .task-tab.active[data-kind="writing"] { color: var(--green); background: white; box-shadow: 0 2px 8px rgba(37,57,92,.08); }
+    .task-count { margin-left: 5px; padding: 1px 6px; border-radius: 6px; background: rgba(100,112,138,.1); font-size: 10px; }
+    .task-list { margin-top: 13px; display: grid; gap: 10px; }
+    .task-empty { padding: 22px 14px; border: 1px dashed #cbd5e2; border-radius: 12px; color: #8c97a8; background: #fafbfc; font-size: 11px; text-align: center; }
+    .task-card { overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: white; }
+    .task-card.open { border-color: #c4d2eb; box-shadow: 0 7px 20px rgba(41,61,96,.07); }
+    .task-card[data-kind="writing"].open { border-color: #c5d9d0; }
+    .task-head { width: 100%; min-height: 57px; padding: 9px 11px; display: flex; align-items: center; gap: 9px; border: 0; color: var(--ink); background: #fbfcfe; cursor: pointer; text-align: left; }
+    .task-card[data-kind="writing"] .task-head { background: #fbfdfc; }
+    .task-order { width: 31px; height: 31px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 9px; color: var(--blue); background: var(--blue-soft); font-size: 11px; font-weight: 900; }
+    .task-card[data-kind="writing"] .task-order { color: var(--green); background: var(--green-soft); }
+    .task-head-copy { min-width: 0; flex: 1; }
+    .task-head-title, .task-head-summary { overflow: hidden; display: block; text-overflow: ellipsis; white-space: nowrap; }
+    .task-head-title { font-size: 12px; font-weight: 900; }
+    .task-head-summary { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .task-arrow { color: #7f8ba0; transition: transform .17s ease; }
+    .task-card.open .task-arrow { transform: rotate(180deg); }
+    .task-body { display: none; padding: 14px; border-top: 1px solid var(--line); }
+    .task-card.open .task-body { display: block; }
+    .feedback-field { margin-top: 11px; padding: 11px; border: 1px solid #e5e9f0; border-radius: 11px; background: #fcfdff; }
+    .feedback-field.focus { background: #fffdf9; }
+    .feedback-field.improve { background: #fbfdfc; }
+    .feedback-field-head { margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+    .feedback-field-head strong { font-size: 11px; }
+    details.library { margin-top: 8px; padding-top: 7px; border-top: 1px dashed #dce2ec; }
+    details.library > summary { width: fit-content; color: #65738b; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }
+    details.library > summary::-webkit-details-marker, details.option-group > summary::-webkit-details-marker, details.short-box > summary::-webkit-details-marker, details.optional > summary::-webkit-details-marker { display: none; }
+    details.library > summary::before, details.short-box > summary::before, details.optional > summary::before { margin-right: 5px; color: var(--blue); content: "＋"; }
+    details.library[open] > summary::before, details.short-box[open] > summary::before, details.optional[open] > summary::before { content: "－"; }
+    .option-groups { margin-top: 7px; display: grid; gap: 6px; }
+    details.option-group { overflow: hidden; border: 1px solid #e4e8ef; border-radius: 8px; background: white; }
+    details.option-group > summary { padding: 6px 8px; display: flex; justify-content: space-between; color: #4f5e75; background: #fafbfc; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }
+    .options { padding: 7px; display: flex; flex-wrap: wrap; gap: 5px; border-top: 1px solid #edf0f4; }
+    .option-btn { padding: 4px 7px; border: 1px solid #dae1ec; border-radius: 6px; color: #536179; background: #fafbfd; cursor: pointer; font-size: 10px; text-align: left; }
+    .option-btn:hover { border-color: #aebfdf; color: var(--blue-deep); background: var(--blue-soft); }
+    details.short-box { margin-top: 8px; padding: 9px; border: 1px solid #e7dcc9; border-radius: 9px; background: var(--amber-soft); }
+    details.short-box > summary { color: #755022; cursor: pointer; font-size: 10px; font-weight: 900; list-style: none; }
+    .short-grid { margin-top: 8px; display: grid; grid-template-columns: .75fr 1.25fr auto; gap: 6px; }
+    .short-grid input { height: 34px; border-color: #decfb6; font-size: 11px; }
+    .task-footer { margin-top: 12px; padding-top: 10px; display: flex; justify-content: flex-end; border-top: 1px solid #edf0f4; }
+    .add-task { width: 100%; margin-top: 10px; min-height: 42px; border: 1px dashed #b8c5d8; border-radius: 11px; color: var(--blue); background: rgba(255,255,255,.65); cursor: pointer; font-weight: 800; }
+    .add-task[data-kind="writing"] { border-color: #b8cfc5; color: var(--green); }
+    .add-task:hover { border-style: solid; background: white; }
+    details.optional { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+    details.optional > summary { color: #68758b; cursor: pointer; font-size: 11px; font-weight: 800; list-style: none; }
+
+    .preview-toolbar { margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .preview-label { color: #5d687e; font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    #preview { overflow: hidden; border: 1px solid #dce2ec; border-radius: 22px; background: white; box-shadow: var(--shadow); }
+    .report-cover { position: relative; padding: 27px 29px 23px; overflow: hidden; color: white; background: var(--navy-2); }
+    .report-cover::after { position: absolute; right: -46px; bottom: -78px; width: 210px; height: 210px; border: 34px solid rgba(255,255,255,.065); border-radius: 50%; content: ""; }
+    .report-kicker { position: relative; z-index: 1; color: #aebfdd; font-size: 9px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .report-cover h2 { position: relative; z-index: 1; margin: 7px 0 0; font-size: 24px; line-height: 1.35; letter-spacing: .04em; }
+    .report-cover p { position: relative; z-index: 1; margin: 5px 0 0; color: #c4cfe1; font-size: 10px; }
+    .student-line { position: relative; z-index: 1; margin-top: 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+    .student-name { font-size: 18px; font-weight: 900; }
+    .report-date { color: #c8d3e4; font-size: 10px; text-align: right; }
+    .report-content { padding: 22px 24px 25px; }
+    .report-meta { margin-bottom: 19px; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid #e0e5ed; border-radius: 12px; background: #fafbfc; }
+    .meta-cell { min-width: 0; padding: 10px; border-right: 1px solid #e5e9ef; }
+    .meta-cell:last-child { border-right: 0; }
+    .meta-label { color: #8b95a7; font-size: 8px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+    .meta-value { margin-top: 2px; color: #2f3c56; font-size: 10px; font-weight: 800; overflow-wrap: anywhere; }
+    .report-section { margin-top: 21px; }
+    .report-section:first-of-type { margin-top: 0; }
+    .report-section-head { margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+    .report-section-icon { width: 28px; height: 28px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 8px; color: var(--blue); background: var(--blue-soft); font-size: 10px; font-weight: 900; }
+    .report-section.homework .report-section-icon { color: var(--green); background: var(--green-soft); }
+    .report-section-title { font-size: 12px; font-weight: 900; }
+    .report-section-title small { margin-left: 5px; color: #98a1b0; font-size: 8px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .focus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .focus-card { padding: 11px 12px; border: 1px solid #e1e6ee; border-radius: 11px; background: #fbfcfe; }
+    .focus-card.full { grid-column: 1 / -1; }
+    .focus-card-title { margin-bottom: 6px; color: #6a768b; font-size: 9px; font-weight: 900; }
+    .focus-card-content { color: #445168; font-size: 10px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .bullet-line { display: flex; align-items: flex-start; gap: 6px; }
+    .bullet-line + .bullet-line { margin-top: 5px; }
+    .bullet-num { min-width: 17px; height: 17px; padding: 0 3px; display: inline-grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 7px; font-weight: 900; }
+    .class-records { display: grid; gap: 5px; }
+    .class-record { padding: 7px 8px; border: 1px solid #e4e8ef; border-radius: 8px; background: white; }
+    .class-record-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .class-word { color: #24334d; font-size: 11px; font-weight: 900; letter-spacing: .02em; overflow-wrap: anywhere; }
+    .class-note { margin-top: 3px; color: #657188; font-size: 9px; line-height: 1.65; }
+    .empty-text { color: #a0a8b6; }
+    .homework-list { display: grid; gap: 8px; }
+    .homework-card { overflow: hidden; border: 1px solid #dce4ef; border-radius: 11px; background: white; }
+    .homework-card.writing { border-color: #d9e6e0; }
+    .homework-title { padding: 8px 10px; display: flex; align-items: flex-start; gap: 8px; border-bottom: 1px solid #e7ebf1; color: #2d4777; background: #f4f7fc; font-size: 10px; font-weight: 900; }
+    .homework-card.writing .homework-title { border-bottom-color: #e1eae6; color: #466f5e; background: #f3f8f5; }
+    .homework-no { width: 18px; height: 18px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 8px; }
+    .homework-card.writing .homework-no { background: var(--green); }
+    .homework-rows { padding: 3px 9px 6px; }
+    .homework-row { padding: 7px 0; display: grid; grid-template-columns: 61px minmax(0,1fr); gap: 7px; border-bottom: 1px dashed #e5e9ef; }
+    .homework-row:last-child { border-bottom: 0; }
+    .homework-row-label { color: #828c9e; font-size: 8px; font-weight: 900; }
+    .homework-row-value { color: #465166; font-size: 9px; line-height: 1.72; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .numbered-line { display: flex; align-items: flex-start; gap: 5px; }
+    .numbered-line + .numbered-line { margin-top: 4px; }
+    .number-badge { min-width: 16px; height: 16px; padding: 0 3px; display: inline-grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 7px; font-weight: 900; }
+    .homework-card.writing .number-badge { background: var(--green); }
+    .teacher-note { margin-top: 20px; padding: 16px 17px; border: 1px solid #eadfc8; border-radius: 13px; background: #fffcf6; }
+    .teacher-note-head { margin-bottom: 7px; display: flex; justify-content: space-between; gap: 10px; }
+    .teacher-note-title { color: #795b2e; font-size: 11px; font-weight: 900; }
+    .teacher-note-en { color: #b19974; font-family: Georgia, serif; font-size: 8px; font-style: italic; }
+    .teacher-note-content { color: #554d41; font-size: 9px; line-height: 1.8; white-space: pre-wrap; }
+    .progress-wrap { margin-top: 17px; padding-top: 12px; border-top: 1px solid #e8ebf0; }
+    .progress-head { margin-bottom: 5px; display: flex; justify-content: space-between; color: #8b95a7; font-size: 8px; font-weight: 900; }
+    .progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: #edf0f4; }
+    .progress-bar { height: 100%; border-radius: inherit; background: var(--blue); }
+    .report-footer { margin-top: 18px; padding-top: 12px; display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #e8ebf0; color: #98a1b1; font-size: 7px; }
+    .toast { position: fixed; z-index: 100; right: 20px; bottom: 20px; max-width: min(360px,calc(100vw - 40px)); padding: 10px 13px; border: 1px solid #cdd8ed; border-radius: 10px; color: #26457e; background: #f4f8ff; box-shadow: 0 14px 30px rgba(26,44,76,.16); opacity: 0; pointer-events: none; transform: translateY(10px); transition: .18s ease; font-size: 11px; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .capture-stage { position: fixed; z-index: -100; left: -10000px; top: 0; width: 900px; background: white; pointer-events: none; }
+
+    @media (max-width: 1160px) {
+      .workspace-grid { grid-template-columns: 1fr; }
+      .preview-pane { position: static; width: min(800px,100%); margin: 0 auto; }
+    }
+    @media (max-width: 760px) {
+      .topbar-inner, .workspace { width: min(100% - 20px,1520px); }
+      .topbar-inner { padding: 10px 0; align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; }
+      .sync-state { display: none; }
+      .top-actions .btn { flex: 1 1 auto; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-2, .focus-grid { grid-template-columns: 1fr; }
+      .focus-card.full { grid-column: auto; }
+      .record-builder-grid, .record-item, .short-grid { grid-template-columns: 1fr; }
+      .report-content { padding: 18px 15px 21px; }
+      .report-cover { padding: 23px 20px 20px; }
+      .report-meta { grid-template-columns: 1fr 1fr; }
+      .meta-cell:nth-child(2) { border-right: 0; }
+      .meta-cell:nth-child(-n+2) { border-bottom: 1px solid #e5e9ef; }
+    }
+    @media (max-width: 480px) {
+      .brand p, .btn-label { display: none; }
+      .grid-4 { grid-template-columns: 1fr; }
+      .report-meta { grid-template-columns: 1fr; }
+      .meta-cell { border-right: 0; border-bottom: 1px solid #e5e9ef; }
+      .meta-cell:last-child { border-bottom: 0; }
+      .homework-row { grid-template-columns: 54px minmax(0,1fr); }
+    }
+    @media print {
+      @page { size: A4; margin: 9mm; }
+      body { background: white; }
+      .topbar, .editor-pane, .preview-toolbar { display: none !important; }
+      .workspace { width: 100%; margin: 0; }
+      .workspace-grid { display: block; }
+      .preview-pane { position: static; width: 100%; }
+      #preview { border: 0; border-radius: 0; box-shadow: none; }
+      .focus-card, .homework-card, .teacher-note { break-inside: avoid; }
+    }
+  </style>
 </head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">B</div>
+        <div>
+          <h1>课堂与课后综合反馈编辑器 <span style="color:#7fa7ff;font-size:10px">v7.0</span></h1>
+          <p>CLASSROOM &amp; HOMEWORK FEEDBACK · OFFLINE</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="sync-state" id="saveState">已在本机自动保存</span>
+        <button class="btn" id="importBtn" type="button"><span>⇧</span><span class="btn-label">导入备份</span></button>
+        <button class="btn" id="exportBtn" type="button"><span>⇩</span><span class="btn-label">导出备份</span></button>
+        <button class="btn" id="printBtn" type="button"><span>▤</span><span class="btn-label">打印</span></button>
+        <button class="btn btn-primary" id="imageBtn" type="button"><span>▣</span><span class="btn-label">生成图片</span></button>
+        <input class="hidden" id="importFile" type="file" accept=".json,application/json">
+      </div>
+    </div>
+  </header>
 
-<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+  <main class="workspace">
+    <div class="workspace-grid">
+      <section class="editor-pane" aria-label="反馈编辑区">
+        <article class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="panel-index">01</span>
+              <div><h2>学生与课程信息</h2><p>姓名、日期、班级、单元为反馈单固定信息</p></div>
+            </div>
+            <button class="btn btn-small btn-danger" id="resetBtn" type="button">清空重填</button>
+          </div>
+          <div class="panel-body">
+            <div class="grid-4">
+              <div class="field"><label for="studentName">学生姓名</label><input id="studentName" data-meta="n" placeholder="例如：Emma"></div>
+              <div class="field"><label for="classDate">上课日期</label><input id="classDate" data-meta="d" type="date"></div>
+              <div class="field"><label for="className">班级</label><input id="className" data-meta="c" placeholder="例如：KB2-A"></div>
+              <div class="field"><label for="unitName">单元</label><input id="unitName" data-meta="u" placeholder="例如：Unit 5 Animals"></div>
+            </div>
+            <details class="optional">
+              <summary>可选：课程进度与页脚设置</summary>
+              <div class="grid-2" style="margin-top:10px">
+                <div class="field"><label>当前课时</label><input id="currentClass" data-meta="cur" type="number" step="0.1" placeholder="5.5"></div>
+                <div class="field"><label>总计课时</label><input id="totalClass" data-meta="tot" type="number" step="0.1" placeholder="40"></div>
+                <div class="field"><label>页脚名称</label><input id="bottomText1" data-meta="b1"></div>
+                <div class="field"><label>页脚标语</label><input id="bottomText2" data-meta="b2"></div>
+              </div>
+            </details>
+          </div>
+        </article>
 
- <nav class="bg-primary text-white py-4 px-6 sticky top-0 z-50 shadow-lg">
- <div class="container mx-auto flex justify-between items-center">
- <div class="flex items-center gap-3">
- <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
- <i class="fa fa-file-text-o text-lg"></i>
- </div>
- <div>
- <h1 class="font-bold text-lg tracking-tight">反馈报告编辑工具 <span class="text-brand text-xs ml-1">v6.5 Pro</span></h1>
- <p class="text-[10px] text-slate-400 uppercase tracking-widest leading-none">After-Class Feedback System</p>
- </div>
- </div>
- <div class="hidden md:flex gap-4">
- <div id="saveStatus" class="text-xs text-slate-400 flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full transition-all">
- <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 实时预览同步中
- </div>
- </div>
- </div>
- </nav>
+        <article class="panel classroom">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="panel-index">02</span>
+              <div><h2>本节重点知识点</h2><p>只记录家长回去需要继续消化的核心内容，不必罗列全部教学内容</p></div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="soft-box">
+              <div class="soft-box-title"><strong><span class="section-accent violet"></span>本节重点知识点</strong><span class="hint">每行一项，预览自动编号</span></div>
+              <textarea id="keyPoints" data-classroom="keyPoints" placeholder="例如：&#10;身体部位单词的单复数形式&#10;have got / has got 的使用区别&#10;句子中的第三人称主语与动词搭配"></textarea>
+            </div>
+          </div>
+        </article>
 
- <main class="container mx-auto p-4 lg:p-8">
- <div class="flex flex-col lg:flex-row gap-8">
- 
- <section class="w-full lg:w-1/2 space-y-6">
- 
- <div class="editor-card">
- <h2 class="section-title"><i class="fa fa-id-card-o text-brand"></i> 学生档案信息</h2>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Student Name / 姓名</label>
- <input type="text" id="studentName" class="input-field" placeholder="输入姓名">
- </div>
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Date / 上课日期</label>
- <input type="date" id="classDate" class="input-field">
- </div>
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Class / 班级</label>
- <input type="text" id="className" class="input-field" placeholder="Level 3 - A1">
- </div>
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Unit / 单元内容</label>
- <input type="text" id="unitName" class="input-field" placeholder="Unit 5 Animals">
- </div>
- </div>
- </div>
+        <article class="panel classroom">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="panel-index">03</span>
+              <div><h2>课堂学习反馈</h2><p>记录本节课现场表现；课堂语法与上节课作业问题分开呈现</p></div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="soft-box">
+              <div class="soft-box-title"><strong><span class="section-accent red"></span>单词拼写／拆分／默写</strong><span class="hint">可指定单词中的易错部分标红</span></div>
+              <div class="record-builder">
+                <div class="record-builder-grid">
+                  <select id="spellingType" aria-label="记录类型"><option>拼写</option><option>拆分</option><option>默写</option></select>
+                  <input id="spellingWord" placeholder="完整单词，如 beautiful">
+                  <input id="spellingPart" placeholder="标红部分，如 eau">
+                  <input id="spellingNote" placeholder="问题说明，如这部分字母顺序容易写错">
+                  <button class="btn btn-small btn-primary" id="addSpelling" type="button">加入</button>
+                </div>
+                <div class="red-help">标红部分必须是完整单词中的连续片段；多个片段可用“|”分开，例如：ea|ti。</div>
+              </div>
+              <div class="record-list" id="spellingList"></div>
+            </div>
 
- <div class="editor-card border-t-4 border-brand">
- <div class="flex justify-between items-center mb-6">
- <h2 class="section-title mb-0 border-none pl-0"><i class="fa fa-microphone text-brand"></i> 语音任务详情</h2>
- <button id="addVoiceTask" class="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-600 shadow-md shadow-blue-500/20 transition-all active:scale-95">
- <i class="fa fa-plus mr-1"></i> 新增任务
- </button>
- </div>
- <div id="voiceTasksContainer" class="space-y-4">
- </div>
- </div>
+            <div class="soft-box">
+              <div class="soft-box-title"><strong><span class="section-accent red"></span>单词发音</strong><span class="hint">只标红发音需要关注的字母或音节部分</span></div>
+              <div class="record-builder pron">
+                <div class="record-builder-grid" style="grid-template-columns:1.1fr .8fr 1.7fr auto">
+                  <input id="pronWord" placeholder="完整单词，如 afternoon">
+                  <input id="pronPart" placeholder="标红部分，如 oo">
+                  <input id="pronNote" placeholder="发音提示，如 oo 音再拉长一些">
+                  <button class="btn btn-small btn-primary" id="addPron" type="button">加入</button>
+                </div>
+                <div class="quick-row" id="pronQuickRow"></div>
+              </div>
+              <div class="record-list" id="pronList"></div>
+            </div>
 
- <div class="editor-card border-t-4 border-success">
- <div class="flex justify-between items-center mb-6">
- <h2 class="section-title mb-0 border-none pl-0"><i class="fa fa-pencil text-success"></i> 书写任务详情</h2>
- <button id="addWritingTask" class="bg-success text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all active:scale-95">
- <i class="fa fa-plus mr-1"></i> 新增任务
- </button>
- </div>
- <div id="writingTasksContainer" class="space-y-4">
- </div>
- </div>
+            <div class="soft-box">
+              <div class="soft-box-title"><strong><span class="section-accent violet"></span>课堂语法与知识点反馈</strong><span class="hint">仅写本节课堂中暴露、需要课后关注的语法问题</span></div>
+              <textarea id="grammarPoints" data-classroom="grammar" placeholder="例如：&#10;使用 have got / has got 时，需要先判断句子主语。&#10;名词复数词尾 -s 在表达和书写中都需要保留。"></textarea>
+              <div class="quick-row">
+                <button class="quick-chip" data-append="grammarPoints" data-text="课堂练习中，目标句型结构还不够稳定，需要结合替换词继续巩固。" type="button">句型不稳</button>
+                <button class="quick-chip" data-append="grammarPoints" data-text="使用句型时需要先判断主语，再选择对应的动词形式。" type="button">主谓搭配</button>
+                <button class="quick-chip" data-append="grammarPoints" data-text="名词单复数形式还需要继续关注，尤其注意词尾变化。" type="button">单复数</button>
+                <button class="quick-chip" data-append="grammarPoints" data-text="句子中的大小写和句末标点需要同步检查。" type="button">格式细节</button>
+              </div>
+            </div>
 
- <div class="editor-card bg-slate-50/50">
- <h2 class="section-title"><i class="fa fa-bar-chart text-brand"></i> 学习进度与评价</h2>
- <div class="grid grid-cols-2 gap-4 mb-5">
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1">当前课时 (Current)</label>
- <input type="number" id="currentClass" step="0.1" class="input-field" placeholder="5.5">
- </div>
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1">总计课时 (Total)</label>
- <input type="number" id="totalClass" step="0.1" class="input-field" placeholder="40">
- </div>
- </div>
- <div class="space-y-1">
- <label class="text-xs font-bold text-slate-500 ml-1">教师综合寄语</label>
- <textarea id="otherFeedback" class="input-field" rows="4" placeholder="写下对的鼓励或给家长的务实建议..."></textarea>
- </div>
- </div>
+            <div class="grid-2" style="margin-top:12px">
+              <div class="soft-box" style="margin:0">
+                <div class="soft-box-title"><strong><span class="section-accent green"></span>课堂表现概况</strong><span class="hint">可选</span></div>
+                <textarea id="classPerformance" data-classroom="performance" placeholder="例如：课堂参与积极，能够主动回答问题；遇到不确定内容时还需要更多独立思考。"></textarea>
+                <div class="quick-row">
+                  <button class="quick-chip" data-append="classPerformance" data-text="课堂参与积极，能够主动跟随练习并回应问题。" type="button">参与积极</button>
+                  <button class="quick-chip" data-append="classPerformance" data-text="课堂状态整体稳定，主要任务能够按要求完成。" type="button">状态稳定</button>
+                  <button class="quick-chip" data-append="classPerformance" data-text="部分内容需要提示后才能完成，独立反应速度还可以继续提升。" type="button">需要提示</button>
+                </div>
+              </div>
+              <div class="soft-box" style="margin:0">
+                <div class="soft-box-title"><strong><span class="section-accent"></span>课堂备注</strong><span class="hint">可选</span></div>
+                <textarea id="classRemarks" data-classroom="remarks" placeholder="补充课堂状态、教材页码、需家长知晓的特殊情况等。"></textarea>
+              </div>
+            </div>
+          </div>
+        </article>
 
- <div class="editor-card">
- <h2 class="section-title"><i class="fa fa-tags text-slate-400"></i> 页脚标语设置</h2>
- <div class="space-y-3">
- <input type="text" id="bottomText1" class="input-field" value="BOBOspeak英语工作室">
- <input type="text" id="bottomText2" class="input-field" value="让英语不止是学科，更是未来竞争力！🚀">
- </div>
- </div>
+        <article class="panel homework">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="panel-index">04</span>
+              <div><h2>上节课课后任务反馈</h2><p>默认不预留空任务；点击新增后才会出现对应卡片</p></div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="task-tabs" role="tablist">
+              <button class="task-tab active" data-kind="voice" type="button">语音任务 <span class="task-count" id="voiceCount">0</span></button>
+              <button class="task-tab" data-kind="writing" type="button">书写任务 <span class="task-count" id="writingCount">0</span></button>
+            </div>
+            <div id="voiceArea">
+              <div class="task-list" id="voiceTasks"></div>
+              <button class="add-task" data-kind="voice" type="button">＋ 新增语音任务</button>
+            </div>
+            <div id="writingArea" class="hidden">
+              <div class="task-list" id="writingTasks"></div>
+              <button class="add-task" data-kind="writing" type="button">＋ 新增书写任务</button>
+            </div>
+          </div>
+        </article>
 
- <div class="grid grid-cols-3 lg:grid-cols-6 gap-3 pb-24">
- <button id="importBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
- <i class="fa fa-folder-open-o mb-1"></i><span class="text-xs font-bold">导入JSON</span>
- </button>
- <button id="exportBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
- <i class="fa fa-file-code-o mb-1"></i><span class="text-xs font-bold">导出JSON</span>
- </button>
- <button id="restoreBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
- <i class="fa fa-history mb-1"></i><span class="text-[10px] font-bold">恢复手动存档</span>
- </button>
- <button id="resetBtn" class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
- <i class="fa fa-trash-o mb-1"></i><span class="text-[10px] font-bold">清空重置</span>
- </button>
- <button id="saveBtn" class="flex flex-col items-center justify-center p-3 bg-slate-800 text-white rounded-2xl hover:bg-slate-900 shadow-lg active:scale-95 transition-all">
- <i class="fa fa-save mb-1"></i><span class="text-xs font-bold">手动保存</span>
- </button>
- <button id="downloadBtn" class="flex flex-col items-center justify-center p-3 bg-brand text-white rounded-2xl hover:bg-blue-600 shadow-xl shadow-blue-500/20 active:scale-95 transition-all">
- <i class="fa fa-download mb-1"></i><span class="text-xs font-bold">生成图片</span>
- </button>
- </div>
- <input type="file" id="importFileInput" accept=".json" class="hidden">
- </section>
+        <article class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="panel-index">05</span>
+              <div><h2>本节课后辅导提示</h2><p>家长拿到反馈后，可以直接按这里的重点带孩子复习</p></div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="field"><label for="teacherFeedback">综合辅导建议</label><textarea id="teacherFeedback" placeholder="例如：本节课请优先复习上方标红的拼写和发音片段，再结合重点句型完成2轮口头替换练习。上节课任务中的错词按建议复读后重新录制一次。"></textarea></div>
+            <div class="quick-row">
+              <button class="quick-chip" data-feedback-template="请优先复习本节课标红的拼写和发音片段，再结合课堂重点知识进行针对性巩固。" type="button">复习标红内容</button>
+              <button class="quick-chip" data-feedback-template="本节课整体完成情况不错，课后重点巩固课堂中还不够稳定的单词和语法点即可。" type="button">整体良好</button>
+              <button class="quick-chip" data-feedback-template="建议按照反馈中的顺序进行短时、多轮复习：先读准和写准单词，再回到句型中进行完整表达。" type="button">分步巩固</button>
+            </div>
+          </div>
+        </article>
+      </section>
 
- <section class="w-full lg:w-1/2">
- <div class="lg:sticky lg:top-24">
- <div class="flex justify-between items-center mb-4 px-2">
- <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
- <span class="w-2 h-2 bg-brand rounded-full"></span> 报告单实时预览
- </h2>
- <div class="flex gap-2">
- <span class="w-3 h-3 rounded-full bg-slate-200"></span>
- <span class="w-3 h-3 rounded-full bg-slate-200"></span>
- <span class="w-3 h-3 rounded-full bg-slate-200"></span>
- </div>
- </div>
+      <aside class="preview-pane" aria-label="反馈预览">
+        <div class="preview-toolbar"><span class="preview-label">LIVE FEEDBACK PREVIEW</span><span class="hint">右侧内容将进入图片</span></div>
+        <article id="preview" aria-live="polite"></article>
+      </aside>
+    </div>
+  </main>
 
- <div class="preview-scroll-wrapper">
- <div id="previewContainer" class="preview-sheet rounded-xl border border-slate-200 origin-top">
- <div class="bg-primary text-white p-8 text-center relative overflow-hidden">
- <div class="absolute top-0 right-0 p-4 opacity-10">
- <i class="fa fa-graduation-cap text-8xl -rotate-12"></i>
- </div>
- <h2 class="text-2xl font-black tracking-widest mb-1 relative z-10">学生课后任务反馈单</h2>
- <p class="text-slate-400 text-[10px] tracking-[0.3em] font-light relative z-10">AFTER-CLASS TASK FEEDBACK FORM</p>
- </div>
- 
- <div class="p-8 space-y-8">
- <div class="grid grid-cols-2 gap-x-12 gap-y-5 border-b border-slate-100 pb-6">
- <div class="flex flex-col gap-1">
- <span class="text-[10px] font-black text-slate-400 uppercase italic">Student Name</span>
- <span id="previewName" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
- </div>
- <div class="flex flex-col gap-1">
- <span class="text-[10px] font-black text-slate-400 uppercase italic">Class Name</span>
- <span id="previewClass" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
- </div>
- <div class="flex flex-col gap-1">
- <span class="text-[10px] font-black text-slate-400 uppercase italic">Date</span>
- <span id="previewDate" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
- </div>
- <div class="flex flex-col gap-1">
- <span class="text-[10px] font-black text-slate-400 uppercase italic">Unit / Topic</span>
- <span id="previewUnit" class="font-bold border-b-2 border-slate-50 py-1 text-slate-800">___________</span>
- </div>
- </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
- <div id="previewTasksTableBody" class="space-y-4">
- </div>
+  <script>
+    (() => {
+      'use strict';
 
- <div id="previewOtherFeedbackContainer">
- <h3 class="text-xs font-black mb-3 flex items-center gap-2 text-primary uppercase italic">
- <span class="w-8 h-1 bg-brand rounded-full"></span> Teacher's Feedback
- </h3>
- <div class="bg-blue-50/40 p-5 rounded-2xl border-l-4 border-brand italic text-slate-600 text-xs leading-loose preserve-line-breaks" id="previewOtherFeedback">
- 暂无内容
- </div>
- </div>
+      const STORAGE_KEY = 'bobo_classroom_homework_feedback_v7_final_autosave';
+      const KIND = {
+        voice: { key: 'v', label: '语音', short: '语', list: 'voiceTasks', count: 'voiceCount' },
+        writing: { key: 'w', label: '书写', short: '写', list: 'writingTasks', count: 'writingCount' }
+      };
 
- <div class="pt-4 border-t border-slate-100">
- <div class="flex justify-between items-end mb-2">
- <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Course Progress</span>
- <span class="text-xs font-black text-brand" id="previewClassProgressText">0 / 0</span>
- </div>
- <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
- <div id="previewClassProgressBar" class="h-full bg-brand transition-all duration-1000 ease-out" style="width: 0%"></div>
- </div>
- </div>
- </div>
+      const HOMEWORK_OPTIONS = {
+        voice: {
+          performance: {
+            '文字认读与照读': [
+              ['认读优秀', '能流利读出文字条中的内容，认读较准确，整体朗读比较自然。'],
+              ['认读良好', '能读出文字条中的大部分内容，个别词汇需要再留意。'],
+              ['认读发展中', '基本能完成文字条认读，部分词汇还需要提示和巩固。']
+            ],
+            '跟读与朗读': [
+              ['跟读优秀', '能够较准确模仿原声语音，发音和语调比较自然。'],
+              ['跟读良好', '基本能够跟随原声完成朗读，个别发音和语调细节还需要调整。'],
+              ['句子良好', '大部分句子朗读准确，整体较流畅，个别停顿和语调还可以再自然一些。']
+            ],
+            '单词与拼读': [
+              ['单词优秀', '单词发音准确，吐字饱满清晰，核心词掌握得比较扎实。'],
+              ['单词良好', '能够准确读出大部分单词，个别单词的元音、尾音或重音还可以再细化。'],
+              ['拼读良好', '基本能根据拼读规则读出单词，个别组合音还需加强辨认。']
+            ],
+            '输出、复述与歌曲': [
+              ['输出良好', '能围绕任务完成主要表达，句子基本准确，个别词汇、句型或语音细节还可以再打磨。'],
+              ['复述良好', '能够复述出故事的主要情节，表达比较连贯，部分细节可以再加强。'],
+              ['歌曲良好', '基本能完整输出歌曲内容，整体较流畅，个别单词发音还可以再优化。']
+            ],
+            '提交情况': [
+              ['已完成', '本次任务已按要求提交，老师已完成检查与反馈。'],
+              ['提交不完整', '目前只收到部分任务内容，可能存在漏录或漏传情况，建议补充后再复盘。'],
+              ['暂未提交', '本次任务暂未收到提交，老师暂时无法进行完整评价。']
+            ]
+          },
+          focus: {
+            '发音细节': [
+              ['短元音', '个别短元音的准确性还需要加强。'],
+              ['长短音', '注意区分长元音和短元音，发音时长要更清楚。'],
+              ['尾音', '注意个别单词尾音的清晰发音，避免吞音。'],
+              ['重音', '个别多音节单词的重音位置需要再留意。'],
+              ['组合音', '部分常见字母组合音的识别还不够稳定。']
+            ],
+            '朗读与认读': [
+              ['逐词认读', '看文字内容时注意逐词认读，减少猜读。'],
+              ['漏读跳读', '朗读时注意不要漏词、跳词或跳行。'],
+              ['意群停顿', '注意长句的意群划分和合理停顿。'],
+              ['语调', '句末升降调还可以更明确，增强朗读自然度。']
+            ],
+            '表达与任务习惯': [
+              ['句型准确', '输出时目标句型结构还不够稳定。'],
+              ['提示依赖', '独立输出时还需要借助部分关键词或提示。'],
+              ['任务完整', '提交前需要核对录音数量和任务页码。'],
+              ['录音质量', '录音时尽量选择安静环境，保证声音清晰。']
+            ]
+          },
+          improve: {
+            '发音与认读': [
+              ['错词回读', '把本次读错的单词单独圈出，每天复读2轮。'],
+              ['跟读三步', '先听1遍原声，再逐句暂停模仿，最后完整朗读1遍。'],
+              ['标记易错词', '把不熟悉或读错的词圈出来，单独复读2轮后再放回句子里读。'],
+              ['录音自查', '录完后回听1遍，重点检查尾音、停顿和语调。']
+            ],
+            '输出与复述': [
+              ['关键词支架', '先用3—5个关键词串联主要内容，再尝试完整表达。'],
+              ['句型替换', '保留目标句型，每次替换1个关键词进行多轮口头操练。'],
+              ['复述支架', '先用关键词串故事，再尝试减少提示完成复述。']
+            ],
+            '提交与习惯': [
+              ['上传确认', '上传后再次打开作业页面，确认音频和任务数量均已成功提交。'],
+              ['任务打勾', '每完成并上传一项任务就在清单上打勾，减少漏传。']
+            ]
+          }
+        },
+        writing: {
+          performance: {
+            '字母描写': [
+              ['字母优秀', '字母大小写、占格和笔顺都比较规范，书写习惯很好。'],
+              ['字母良好', '字母书写整体较规范，个别字母的占格、比例或笔顺需留意。'],
+              ['描红良好', '描红整体完成不错，个别字母的起笔、收笔和贴线还可以再注意。']
+            ],
+            '单词与句子': [
+              ['拼写优秀', '单词拼写准确率高，书写清楚，能较好完成词汇输出。'],
+              ['拼写良好', '大部分单词拼写正确，个别易错词还需加强音形记忆。'],
+              ['句子良好', '句子基本能完整写出，个别大小写、标点或语法细节需注意。']
+            ],
+            '卷面与提交': [
+              ['卷面良好', '卷面整体清楚，个别位置可以写得更整齐。'],
+              ['检查良好', '基本能完成检查，建议继续关注拼写、大小写和标点细节。'],
+              ['暂未提交', '本次书写任务暂未收到提交，老师暂时无法进行完整评价。']
+            ]
+          },
+          focus: {
+            '书写规范': [
+              ['占格', '部分字母的占格位置还需要留意。'],
+              ['笔顺', '个别字母的笔顺需要再规范。'],
+              ['间距', '注意单词和字母间隔保持均匀。'],
+              ['易混字母', '注意区分 b/d、p/q 等易混字母。']
+            ],
+            '拼写与格式': [
+              ['漏写', '注意检查单词中是否有漏写字母。'],
+              ['顺序', '部分单词的字母顺序还不够稳定。'],
+              ['大小写', '句首大写和专有名词大写需要继续留意。'],
+              ['标点', '句子末尾需要补充正确标点。']
+            ],
+            '提交质量': [
+              ['图片不清', '本次上传图片不够清晰，部分书写细节不便判断。'],
+              ['漏拍页面', '本次提交可能缺少部分页面或题目。']
+            ]
+          },
+          improve: {
+            '字母与单词': [
+              ['观察再写', '书写前先观察字母结构、占格和笔顺，再开始书写。'],
+              ['边描边读', '描字母或单词时轻声读出来，让手写和发音同步建立记忆。'],
+              ['错词重写', '将本次写错的单词单独整理，每个规范重写2遍。'],
+              ['遮词复写', '先看词读2遍，再遮住范词独立写，最后对照检查。']
+            ],
+            '句子与检查': [
+              ['三查法', '写完后检查三项：拼写、大小写、标点。'],
+              ['指读检查', '写完后边指边读1遍，检查是否存在漏词或顺序错误。']
+            ],
+            '提交与拍照': [
+              ['拍照复查', '上传前先检查照片是否清晰、完整、无遮挡。'],
+              ['完成打勾', '每完成一项就在任务清单上打勾，减少漏写和漏传。']
+            ]
+          }
+        }
+      };
 
- <div class="bg-primary p-6 text-center text-white">
- <p id="previewBottomText1" class="font-black tracking-widest text-sm mb-1 uppercase">BOBOspeak 英语工作室</p>
- <p id="previewBottomText2" class="text-[10px] text-slate-400 tracking-wider">让英语不止是学科，更是未来竞争力！ 🚀</p>
- </div>
- </div>
- </div>
- </div>
- </section>
- </div>
- </main>
+      const PRON_PRESETS = [
+        ['a饱满','a 音再饱满一些'], ['长音','目标音再拉长一些'], ['短元音','短元音再清晰一些'],
+        ['尾音','注意尾音完整清晰'], ['重音','注意单词重音位置'], ['th','th 音需要再留意'],
+        ['st轻读','st 不要拆成生硬的 s+t，t 轻轻带过，听感接近 sd'], ['er弱读','er 音自然弱化一些'], ['ar拉长','ar 音可以适当拉长一些']
+      ];
 
- <div id="notification" class="fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-2xl transform translate-y-[-150%] transition-all duration-300 z-[100] flex items-center gap-3 font-bold bg-slate-800 text-white text-sm"></div>
+      const state = {
+        n:'', d:'', c:'', u:'', cur:'', tot:'', b1:'BOBOspeak英语工作室', b2:'让英语不止是学科，更是未来竞争力！',
+        classroom: { mainTasks:'', keyPoints:'', spelling:[], pronunciation:[], grammar:'', performance:'', remarks:'' },
+        f:'', v:[], w:[], activeKind:'voice'
+      };
 
- <script>
- /* ========================================================
- 1. 配置所有全量备选项（4.9：加入字母直读/描读/描写与未提交提醒语）
- ======================================================== */
- const TASK_OPTIONS = {
- voice: {
- performance: {
- "字母直读与音形对应": [
- ["字母直读优秀", "能快速读出目标字母的字母名和字母音，反应很快，音形对应很清楚。"],
- ["字母直读良好", "基本能读出目标字母的字母名和字母音，个别字母需要稍作停顿后再确认。"],
- ["字母直读发展中", "能在提示下读出部分目标字母，字母名和字母音的对应关系还需要继续巩固。"],
- ["字母直读需巩固", "看到目标字母时还容易犹豫或混淆，建议先回到字母名、字母音的基础认读练习。"],
- ["名音区分优秀", "能清楚区分 letter name 和 letter sound，不容易把字母名和字母音混在一起。"],
- ["名音区分良好", "基本能区分字母名和字母音，个别字母还需要再多做对比练习。"],
- ["名音区分发展中", "在字母名和字母音之间还会出现混读，需要通过听辨和跟读继续建立稳定对应。"],
- ["边指边读优秀", "能一边指读一边发音，眼、口、手配合较好，读音和字形能对应起来。"],
- ["边指边读良好", "基本能边指边读，个别位置需要再放慢速度，避免跳读或漏读。"],
- ["边指边读发展中", "边指边读时还不够稳定，容易出现指读和发音不同步的情况。"],
- ["字母单词对应优秀", "能把目标字母音和单词开头音联系起来，拼读意识很棒。"],
- ["字母单词对应良好", "基本能说出字母音和对应单词，个别单词的开头音还需加强。"],
- ["字母单词对应发展中", "能记住部分对应单词，但从字母音迁移到单词开头音时还需要提示。"]
- ],
- "单词发音与自然拼读": [
- ["单词优秀", "单词发音准确，吐字饱满清晰，核心词掌握得很扎实。"],
- ["单词良好", "能够准确读出大部分单词，个别单词的元音、尾音或重音还可以再细化。"],
- ["单词发展中", "能读出部分核心单词，但个别音形对应还不够稳定，需要继续巩固。"],
- ["单词需巩固", "部分核心单词还需要依赖提示完成认读，建议先进行慢速跟读和错词回读。"],
- ["自然拼读优秀", "能较好地根据字母和字母组合进行拼读，音形对应意识很棒。"],
- ["自然拼读良好", "基本能根据拼读规则读出单词，个别组合音还需加强辨认。"],
- ["自然拼读发展中", "对部分字母音和组合音还不够熟悉，建议继续做慢速拼读练习。"],
- ["自然拼读需巩固", "在拼读时还容易依赖记忆或猜读，需要先把目标字母音、组合音逐个读稳。"],
- ["音素拆分优秀", "音素拆分处理得很好，发音标准，节奏把握准确。"],
- ["音素拆分良好", "基本能完成音素拆分，个别音节的发音准确性和连接还可以再加强。"],
- ["音素拆分发展中", "音素拆分还不够稳定，部分音节容易漏读或混淆，需要继续练习。"],
- ["音素拆分需巩固", "在拆分单词时还需要较多提示，建议先慢速分音，再逐步合成整词。"]
- ],
- "描读与跟读任务": [
- ["描读优秀", "能做到一边描读一边准确发音，手、眼、口同步较好，音形连接意识很强。"],
- ["描读良好", "基本能边描边读，整体完成不错，个别字母或单词还可以再读得更清楚。"],
- ["描读发展中", "描读时容易只看字形、不出声音，建议加入轻声朗读，帮助形成音形记忆。"],
- ["跟读优秀", "能认真模仿原声的发音、停顿和语调，跟读质量较高。"],
- ["跟读良好", "能完成跟读，整体节奏比较稳定，个别薄弱句子可以再多听几遍。"],
- ["跟读发展中", "跟读时偶尔会漏词、拖慢或跟不上节奏，建议先逐句暂停练习。"],
- ["指读优秀", "指读路线清楚能把看到的文字和读出的声音对应起来。"],
- ["指读良好", "基本能完成指读，个别地方需要注意不要跳行、跳词。"],
- ["指读发展中", "指读时还会出现手指位置和朗读内容不同步的情况，需要放慢速度练习。"]
- ],
- "句子朗读与语音语调": [
- ["句子朗读优秀", "句子朗读完整流畅，停顿自然，语音语调也比较有表现力。"],
- ["句子朗读良好", "基本能完整读出句子，整体较流畅，个别长句的停顿和语调还可以再优化。"],
- ["句子朗读发展中", "能读出主要内容，但长句中容易卡顿或逐词朗读，需要继续做分句练习。"],
- ["句子朗读需巩固", "句子朗读还需要较多提示，建议先读熟关键词，再进行整句跟读。"],
- ["连读优秀", "句子连读非常自然流畅，意群停顿准确，语感很棒。"],
- ["连读良好", "句子连读比较流畅，个别连读细节需稍加注意。"],
- ["连读发展中", "句子连读略显生硬，需多注意词与词之间的自然过渡。"],
- ["语调优秀", "重音和语调把握较好，句号结尾能自然降调，整体朗读有起伏。"],
- ["语调良好", "语调整体比较自然，个别句号结尾的句子还需要把句末语调自然降下来。"],
- ["语调发展中", "朗读时语调较平，句号结尾的陈述句还不太会降调，需要多模仿原声的句末收尾。"]
- ],
- "输出与复述": [
- ["输出优秀", "能较完整地用目标词和目标句型进行表达，内容清楚，发音准确，整体输出很流畅。"],
- ["输出良好", "能围绕任务完成主要表达，句子基本准确，整体较流畅，个别词汇、句型或语音细节还可以再打磨。"],
- ["输出发展中", "能完成基础输出，但表达时还需要借助提示，内容完整度、句子连贯性和准确性还需继续提升。"],
- ["输出需巩固", "独立输出时还不够稳定，建议先用关键词和句型框架搭好内容，再逐步减少提示。"],
- ["问答优秀", "能听懂问题并快速作答，回答内容完整，目标句型使用较准确。"],
- ["问答良好", "基本能回答问题，主要信息表达清楚，个别回答可以再补充完整。"],
- ["问答发展中", "能回答部分问题，但反应速度和完整句表达还需要更多练习。"],
- ["看图说话优秀", "能根据图片抓住关键信息进行表达，句子完整，内容比较有条理。"],
- ["看图说话良好", "能根据图片说出主要内容，个别细节和句子连接可以再加强。"],
- ["看图说话发展中", "看图表达时还需要提示关键词，建议先说人物、动作和地点，再串成完整句。"],
- ["背诵优秀", "背诵非常熟练，内容完整，语音语调也比较自然。"],
- ["背诵良好", "背诵基本完整，个别位置还需要再熟悉。"],
- ["背诵发展中", "背诵时还需要提示，建议分段巩固后再整体串联。"],
- ["复述优秀", "故事复述非常完整，逻辑清晰，细节把握到位，表达流畅自然。"],
- ["复述良好", "能够复述出故事的主要情节，表达比较连贯，部分细节和连接词可以再加强。"],
- ["复述发展中", "能说出部分故事信息，但情节顺序和细节完整度还需要借助关键词继续练习。"],
- ["复述需巩固", "复述时还容易断句或遗漏主要情节，建议先按图片顺序分段说，再进行整体复述。"]
- ],
- "歌曲输出": [
- ["歌曲输出优秀", "能够完整输出歌曲内容，节奏自然，整体表达流畅。"],
- ["歌曲输出良好", "基本能完整输出歌曲内容，整体较流畅，个别单词发音还可以再优化。"],
- ["歌曲输出发展中", "能够完成歌曲主要内容，部分歌词熟练度和发音细节还需要加强。"],
- ["歌曲输出需巩固", "歌曲内容掌握还不够稳定，建议结合原声多听、多跟唱，加强熟悉度。"]
- ],
- "跟读模仿": [
- ["跟读模仿优秀", "能够较准确模仿原声语音，发音和语调比较自然。"],
- ["跟读模仿良好", "基本能够跟随原声完成朗读，个别发音和语调细节还需要调整。"],
- ["跟读模仿发展中", "能够完成跟读任务，但部分单词发音和语流还需要继续模仿。"],
- ["跟读模仿需巩固", "建议增加原声输入，多听多模仿，逐步提升朗读自然度。"]
- ],
- "文字认读与照读": [
- ["文字认读优秀", "能看着文字内容较准确地读出单词或句子，认读过程比较流畅。"],
- ["文字认读良好", "基本能根据文字内容读出主要单词或句子，个别词汇还需要再熟悉。"],
- ["文字认读发展中", "看文字认读时还需要一定提示，个别单词容易停顿或猜读。"],
- ["文字认读需巩固", "看文字独立认读还不够稳定，建议先逐词指读，再逐句连读。"],
- ["文字条认读优秀", "能根据文字条较准确地完成认读，单词和句子对应比较清楚。"],
- ["文字条认读良好", "能读出文字条中的大部分内容，个别词汇或句子连接还可以再加强。"],
- ["文字条认读发展中", "文字条认读时还需要提示定位，建议继续练习边指边读。"],
- ["看文朗读优秀", "能对照文本完成朗读，发音清楚，停顿较自然，整体完成度较高。"],
- ["看文朗读良好", "能对照文本完成主要朗读内容，个别单词、停顿或语调细节还可以再打磨。"],
- ["看文朗读发展中", "看文朗读时偶尔会漏词、跳词或停顿较多，建议先慢速指读巩固。"],
- ["指读优秀", "指读时能做到眼睛看、手指到、声音出，文字和读音对应较清楚。"],
- ["指读良好", "基本能进行指读，个别位置还需要注意手指定位和读音同步。"],
- ["指读发展中", "指读时容易出现手指和声音不同步，建议放慢速度逐词对应。"]
- ],
- "错题讲解与学习习惯": [
- ["错题讲解优秀", "能清楚说出错题原因和订正思路，说明理解比较到位。"],
- ["错题讲解良好", "基本能说明错题原因，个别题目还可以再把解题过程说得更完整。"],
- ["错题讲解发展中", "能完成订正，但原因表达还不够具体，需要继续练习把思路说出来。"],
- ["归纳优秀", "错题归纳思路清晰能准确分析客观错误原因，订正非常到位。"],
- ["归纳良好", "错题归纳基本完整能找到大部分错误原因，继续保持。"],
- ["归纳发展中", "错题归纳还不够完整，部分错误原因分析不够具体，需要多加复盘。"],
- ["表现力优秀", "录音状态积极，声音清楚有精神，表达自信大方。"],
- ["表现力良好", "整体录音状态不错，声音再放开一些会更有感染力。"],
- ["表现力发展中", "录音时声音偏小或略紧张，建议先熟悉内容再大胆输出。"]
- ],
- "程度缓和表达": [
- ["整体不错+个别", "整体完成情况不错，个别单词或字母音还需要再巩固。"],
- ["大部分准确", "大部分内容能够准确完成，少数发音细节还需要继续练习。"],
- ["部分不稳", "部分单词或字母音的反应还不够稳定，后续可以继续进行针对性巩固。"],
- ["偶尔混淆", "整体识读情况可以，偶尔会混淆个别字母音或目标音。"],
- ["少数集中", "问题主要集中在少数几个单词或字母上，整体方向是正确的。"],
- ["需提示完成", "能完成基础任务，部分内容需要借助提示后才能更准确地输出。"],
- ["稳定性提升", "目前不是整体不会，而是准确性和稳定性还需要进一步提升。"],
- ["细节再调整", "整体朗读比较顺畅，个别元音、尾音或重音细节还可以再调整。"]
- ],
- "任务提交情况": [
- ["任务已完成", "本次任务已按要求提交，老师已完成检查与反馈。"],
- ["提交不完整", "目前只收到部分任务内容，可能存在漏录或漏传情况，建议补充后再统一复盘。"],
- ["疑似漏传", "老师这边暂时没有看到完整提交内容，可能是漏传或上传失败，建议家长帮忙核对一下。"],
- ["暂未提交", "本次任务暂未收到提交，老师暂时无法进行完整评价，建议补交后再进行针对性反馈。"],
- ["传错内容", "本次提交内容与任务要求不完全一致，建议核对页码和任务说明后重新上传。"],
- ["音频不清", "本次录音声音偏小或环境杂音较多，部分内容不便准确判断，建议重新录制一版。"],
- ["音频缺失", "本次提交中未看到对应音频，可能是上传时遗漏，建议重新检查并补传。"],
- ["延迟补交", "任务已补交，后续建议尽量在规定时间内完成，方便老师及时反馈和调整。"]
- ]
- },
- focus: {
- "字母与音形对应": [
- ["字母音混淆", "注意区分易混字母音，建立稳定的音形对应。"],
- ["字母名音区分", "注意区分字母名和字母音，避免把 letter name 和 sound 混在一起。"],
- ["字母直读反应", "看到目标字母后要尽量快速读出字母音，减少停顿和猜读。"],
- ["字母单词对应", "注意把字母音和对应单词的开头音联系起来。"],
- ["边指边读同步", "边指边读时注意手指位置和发音内容同步，避免跳读或漏读。"],
- ["边描边读同步", "描字母或单词时注意一边描一边读，做到手到、眼到、口到。"]
- ],
- "发音准确度": [
- ["短元音不稳", "注意短元音发音的准确性，避免和长元音混淆。"],
- ["长短音区分", "注意区分长元音和短元音，发音时长要更清楚。"],
- ["组合音识别", "加强常见字母组合音的识别和拼读。"],
- ["单词重音", "注意多音节单词的重音位置。"],
- ["尾音处理", "注意单词尾音的清晰发音，避免吞音。"],
- ["元音饱满", "注意元音发音的饱满度。"],
- ["辅音清晰", "加强辅音的清晰发音。"],
- ["辅音连缀", "注意辅音连缀部分不要漏音或加音。"],
- ["加音问题", "注意辅音后不要额外加出不必要的元音。"],
- ["吞音问题", "注意不要因为读快而吞掉中间音或结尾音。"]
- ],
- "朗读流畅度": [
- ["意群停顿", "注意长句的意群划分和合理停顿。"],
- ["逐词朗读", "减少一个词一个词读的感觉，尝试按小短语整体朗读。"],
- ["语流自然", "提升语流的自然度，减少机械朗读感。"],
- ["语速控制", "朗读时语速可以更平稳，避免过快或过慢。"],
- ["句末降调", "句号结尾的陈述句，句末语调要自然降下来，避免一直平着读或句尾上扬。"],
- ["问句升降调", "一般疑问句句末通常自然上扬，特殊疑问句句末通常自然下降。"],
- ["弱读连读", "注意常见功能词的弱读和词与词之间的连读。"],
- ["标点停顿", "朗读时根据逗号、句号和问号做出停顿和语气变化；句号结尾注意自然降调。"],
- ["声音清晰", "录音时声音可以更靠前、更清楚，方便听到发音细节。"]
- ],
- "文字认读与照读": [
- ["逐词认读", "看文字内容时注意逐词认读，不要直接凭印象背读。"],
- ["指读定位", "认读时可以用手指定位，帮助单词和读音一一对应。"],
- ["看词不猜", "遇到不熟悉的单词时，先看清字母和字母组合，不要直接猜读。"],
- ["漏读跳读", "朗读时注意不要漏词、跳词或跳行。"],
- ["文字声音同步", "注意手指、眼睛和声音保持同步，避免读到后面但手还停在前面。"],
- ["断句停顿", "看文朗读时注意句子停顿，不要一口气读到底。"],
- ["熟练度", "个别文字条或句子还需要多读几遍，提高熟练度。"],
- ["独立认读", "可以逐步减少老师或家长提示，练习独立看文认读。"]
- ],
- "歌曲输出": [
- ["歌词熟练度", "注意歌词内容的熟练程度，避免依赖提示完成输出。"],
- ["节奏语感", "注意跟随歌曲节奏，保持自然停顿和语调变化。"],
- ["发音细节", "歌曲中个别单词发音还可以继续优化。"],
- ["完整输出", "注意从开头到结尾完整输出，减少遗漏。"]
- ],
- "跟读模仿": [
- ["原声模仿", "注意模仿原声中的发音、重音和语调。"],
- ["语音同步", "跟读时注意眼睛、声音和节奏保持同步。"],
- ["停顿语调", "注意句子停顿和语气变化，不要机械朗读。"],
- ["自主跟读", "逐步减少暂停提示，尝试完整跟读。"]
- ],
- "表达与复述": [
- ["内容完整", "输出时注意把人物、地点、动作和结果说完整。"],
- ["关键词遗漏", "复述时注意保留关键人物、地点、动作和结果。"],
- ["情节顺序", "复述故事时注意按照开头、经过、结果的顺序表达。"],
- ["句型准确", "输出时注意目标句型结构和时态表达的准确性。"],
- ["连接不够", "表达时可以加入简单连接词，让内容更连贯。"],
- ["看稿依赖", "可以逐步减少看稿依赖，尝试借助关键词完成输出。"],
- ["反应速度", "问答输出时可以先抓住关键词，逐步提高反应速度。"],
- ["自我纠错", "录音前后可主动检查易错词，提升自我纠错意识。"],
- ["表达自信", "朗读和复述时声音可以更放开，表达更自信。"]
- ],
- "学习状态与提交": [
- ["端正坐姿", "注意朗读和跟读时的坐姿，保持精神饱满。"],
- ["任务完整", "注意按照任务要求完整提交，不漏录、不漏读。"],
- ["录音质量", "录音时尽量选择安静环境，保证声音清晰。"],
- ["漏传任务", "注意确认录音是否成功上传，避免完成了但老师端看不到。"],
- ["上传完整", "提交前核对页码、题号和录音条数，确保任务完整。"],
- ["任务对应", "注意上传内容和任务要求对应，避免传错页码或传错录音。"],
- ["按时提交", "尽量在规定时间内完成并提交，方便老师及时反馈。"]
- ]
- },
- improve: {
- "字母与拼读专项": [
- ["字母直读三步", "先读字母名，再读字母音，最后读对应单词，每组练习2轮。"],
- ["遮读练习", "先看着字母读，再遮住提示读，最后打乱顺序快速读。"],
- ["随机抽读", "把目标字母或单词打乱顺序抽读，避免只按固定顺序记忆。"],
- ["字母单词配对", "把目标字母和对应单词放在一起读，如 H-h-hat，帮助建立音形连接。"],
- ["描读同步", "描字母或单词时同步读出声音，避免只动笔不出声。"],
- ["易混音对比", "把易混的字母音放在一起对比读，每组先慢读3遍，再打乱读。"],
- ["组合音卡片", "把本单元字母组合做成小卡片，每天看音读词2轮。"]
- ],
- "单词发音专项": [
- ["跟读三步法", "先听1遍原声，再逐句暂停模仿，最后完整朗读1遍。"],
- ["错词回读", "把本次读错的单词单独圈出，每天复读2轮。"],
- ["尾音训练", "读单词时刻意放慢最后一个音，避免吞掉 /t/ /d/ /s/ 等尾音。"],
- ["短元音训练", "将易混短元音单词放在一起对比朗读，先慢后快。"],
- ["重音拍手", "读多音节单词时在重读音节轻拍一下，帮助固定重音位置。"],
- ["口型模仿", "跟读时观察老师或原声口型，先夸张模仿，再恢复自然语速。"],
- ["查词熟读", "遇到不熟悉的单词先查读音，再跟读3遍后放入句子中朗读。"]
- ],
- "句子朗读专项": [
- ["每日跟读", "每天坚持10-15分钟跟读练习。"],
- ["多听原声", "多听原声示范材料，跟读薄弱部分。"],
- ["指读练习", "进行指读练习，将单词形和音对应起来。"],
- ["标记连读", "建议在文本中标注连读符号，先慢速跟读，找准发音感觉。"],
- ["标记停顿", "在长句中用斜线标出停顿位置，再按意群朗读。"],
- ["句号降调", "在句号旁标记向下箭头 ↓，朗读到句尾时把语调自然降下来。"],
- ["问句语调", "一般疑问句句末通常上扬，特殊疑问句句末通常下降，可以对照原声进行模仿。"],
- ["慢速整句", "先用慢速把整句读完整，再逐步恢复正常语速。"],
- ["录音自查", "录完后回听1遍，重点检查尾音、停顿和语调。"],
- ["熟读再录", "先跟读熟练再完成任务，避免边想边读造成卡顿。"]
- ],
- "文字认读专项": [
- ["指读定位", "先用手指逐词定位读，确认每个单词都能和声音对应起来。"],
- ["先慢后快", "先慢速读准每个词，再逐步连成完整句朗读。"],
- ["遮图读文", "可以先遮住图片，只看文字完成认读，减少对图片和记忆的依赖。"],
- ["逐句回读", "每读完一句回看一遍文字，检查是否漏词、跳词或改词。"],
- ["文字条抽读", "把文字条打乱顺序抽读，避免只按固定顺序背下来。"],
- ["标记易错词", "把不熟悉或读错的词圈出来，单独复读2轮后再放回句子里读。"],
- ["录音回听", "录完后回听1遍，重点检查是否有漏读、跳读和停顿过多。"],
- ["看文独立读", "先跟读1遍，再看文字独立读1遍，逐步减少提示。"]
- ],
- "歌曲练习专项": [
- ["原声跟唱", "每天结合原声跟唱，先模仿节奏，再关注单词发音。"],
- ["分段练习", "先分段熟悉歌词，再连接完整歌曲。"],
- ["歌词认读", "先确认歌词内容和发音，再进行完整演唱。"],
- ["录音回听", "完成录音后回听，检查发音、节奏和完整度。"]
- ],
- "跟读模仿专项": [
- ["听一句跟一句", "先听原声，再逐句模仿，注意语音语调。"],
- ["影子跟读", "尝试跟随原声节奏同步朗读，提高语流自然度。"],
- ["录音对比", "录下自己的朗读，与原声对比调整发音细节。"],
- ["反复模仿", "针对薄弱句子多次模仿，直到朗读更加自然。"]
- ],
- "复述输出专项": [
- ["关键词提示", "可借助关键词书写提示，先串联主要信息。"],
- ["句型框架", "先套用目标句型框架完成表达，再逐步替换关键词。"],
- ["复述支架", "先用关键词串故事，再尝试不用全文看稿复述。"],
- ["图片顺序", "复述故事前先按图片顺序说出人物、动作和结果。"],
- ["三句复述", "先用3句说清楚开头、经过和结果，再逐步增加细节。"],
- ["分段背诵", "先按图片或情节分段背诵，再进行完整串联。"],
- ["角色扮演", "用角色扮演的方式练习对话，让表达更自然。"],
- ["慢速复述", "复述时先放慢速度，保证句子完整，再逐步提升流畅度。"]
- ],
- "提交与习惯": [
- ["APP辅助", "使用APP辅助发音练习，并重点复听系统提示的薄弱词。"],
- ["任务核对", "提交前核对任务页码、题号和录音内容，避免传错或漏传。"],
- ["上传确认", "录音上传后请返回作业页确认是否显示成功，避免系统未保存。"],
- ["补传提醒", "若老师反馈未看到作业，请及时补传原录音或重新录制一版。"],
- ["安静录音", "录音时靠近设备、避开杂音，保证老师能清楚听到发音细节。"],
- ["完成打勾", "每完成一项就在任务清单上打勾，减少漏做、漏录和漏传。"],
- ["提醒坐姿", "练习时请家长协助提醒保持端正坐姿。"]
- ]
- }
- },
- writing: {
- performance: {
- "字母描写与规范": [
- ["字母规范优秀", "字母大小写、占格和笔顺都比较规范，书写习惯很好。"],
- ["字母规范良好", "字母书写整体较规范，个别字母的占格、比例或笔顺需留意。"],
- ["字母规范发展中", "字母书写规范度还不够稳定，需要继续练习占格和笔顺。"],
- ["字母规范需巩固", "部分字母的大小、位置或笔顺还需要重点练习，建议先慢写再提速。"],
- ["描红优秀", "描红时能贴近范字，线条稳定，占格和笔顺都比较规范。"],
- ["描红良好", "描红整体完成不错，个别字母的起笔、收笔和贴线还可以再注意。"],
- ["描红发展中", "描红时容易偏离范字或线条不够稳定，需要放慢速度观察后再描。"],
- ["描红需巩固", "描红时还容易急着完成，建议先观察范字，再沿线慢慢描写。"],
- ["边描边读优秀", "能做到一边描写一边读出字母或单词，音形连接意识很好。"],
- ["边描边读良好", "基本能边描边读，建议继续保持口手同步，帮助记忆。"],
- ["边描边读发展中", "描写时还容易只写不读，建议加入轻声朗读，帮助形成音形记忆。"],
- ["仿写优秀", "能观察范字后独立仿写，字母位置和整体形态都比较稳定。"],
- ["仿写良好", "基本能完成仿写，个别字母比例、倾斜或间距还可以再调整。"],
- ["仿写发展中", "离开范字后书写还不够稳定，建议描红后盖写再检查。"]
- ],
- "单词拼写与描写": [
- ["单词描写优秀", "单词描写完整清楚，字母顺序、间距和占格都比较到位。"],
- ["单词描写良好", "单词描写基本完成，个别字母比例、间距或笔顺还可以再优化。"],
- ["单词描写发展中", "单词描写时需要更仔细观察范字，避免漏字母、连写或间距不均。"],
- ["单词描写需巩固", "单词描写还需要放慢速度，先看清字母顺序和占格，再一边读一边写。"],
- ["单词拼写优秀", "单词拼写准确率高，书写清楚能较好完成词汇输出。"],
- ["单词拼写良好", "大部分单词拼写正确，个别易错词还需加强音形记忆。"],
- ["单词拼写发展中", "部分单词存在漏字母或顺序错误，需要加强读音、字母组合和书写之间的连接。"],
- ["单词拼写需巩固", "核心词拼写还不够稳定，建议先读准、拆分，再进行遮词复写。"],
- ["看词抄写优秀", "能认真观察示例后抄写，单词结构和间距保持得很好。"],
- ["看词抄写良好", "基本能正确抄写单词，个别字母大小和间距还可以再注意。"],
- ["看词抄写发展中", "抄写时还会出现漏看或漏写，建议一边读一边分块抄写。"],
- ["填空全对", "填空全部正确，说明词汇或句型掌握比较扎实。"],
- ["填空大部分正确", "填空大部分正确，个别空需要继续复习对应单词或句型。"],
- ["填空发展中", "填空正确率还不够稳定，建议回到词义、读音和拼写对应上继续巩固。"]
- ],
- "句子书写与卷面": [
- ["句子书写优秀", "句子书写完整，大小写、单词间距和标点使用较规范。"],
- ["句子书写良好", "句子基本能完整写出，个别大小写、标点或语法细节需注意。"],
- ["句子书写发展中", "句子书写还需要更多辅助，建议先口头表达，再按词块落笔。"],
- ["句子书写需巩固", "独立写句子时还不够稳定，建议先套用句型框架，再逐步完成完整句。"],
- ["卷面优秀", "卷面整洁美观，行距、间距和对齐控制得很好。"],
- ["卷面良好", "卷面整体清楚，个别位置可以写得更整齐。"],
- ["卷面发展中", "卷面整洁度还需提升，书写时注意对齐和减少涂改。"],
- ["检查优秀", "写完后有较好的检查意识能主动发现并修正问题。"],
- ["检查良好", "基本能完成检查，建议继续关注拼写、大小写和标点细节。"],
- ["检查发展中", "写完后检查意识还需加强，建议养成逐词核对的习惯。"]
- ],
- "程度缓和表达": [
- ["整体不错+个别", "整体完成情况不错，个别字母、单词或书写细节还需要再巩固。"],
- ["大部分规范", "大部分内容书写比较规范，少数字母占格或笔顺还需要继续留意。"],
- ["部分不稳", "部分字母或单词的书写稳定性还不够高，后续可以继续进行针对性练习。"],
- ["偶尔出错", "整体书写情况可以，偶尔会在个别字母、拼写或标点上出现小问题。"],
- ["少数集中", "问题主要集中在少数几个字母或单词上，整体完成方向是正确的。"],
- ["需提示完成", "能完成基础书写任务，部分内容需要借助提示后才能写得更准确。"],
- ["稳定性提升", "目前不是整体不会，而是书写规范和检查稳定性还需要进一步提升。"],
- ["细节再调整", "整体卷面比较清楚，个别占格、间距或对齐细节还可以再调整。"]
- ],
- "任务提交情况": [
- ["书写已完成", "本次书写任务已按要求提交，老师已完成检查与反馈。"],
- ["提交不完整", "目前只看到部分书写内容，可能存在漏拍、漏写或漏传情况，建议补充完整后再检查。"],
- ["疑似漏传", "老师这边暂时没有看到完整书写任务，可能是漏传或上传失败，建议家长帮忙核对一下。"],
- ["暂未提交", "本次书写任务暂未收到提交，老师暂时无法进行完整评价，建议补交后再反馈。"],
- ["图片不清", "本次上传图片不够清晰，部分书写细节不便判断，建议重新拍摄后上传。"],
- ["传错页面", "本次上传内容与任务页码不完全对应，建议核对页码后重新提交。"],
- ["漏拍页面", "本次提交可能缺少部分页面或题目，建议检查后补拍完整。"],
- ["延迟补交", "书写任务已补交，后续建议尽量按时提交，方便老师及时检查。"]
- ]
- },
- focus: {
- "书写规范": [
- ["贴近线条", "单词书写时贴近书写线条。"],
- ["描红贴线", "描红时注意贴近范字线条，不要偏离太多。"],
- ["起笔位置", "注意每个字母从正确的位置起笔，形成稳定笔顺。"],
- ["收笔位置", "注意字母收笔位置，不要拖太长或提前断开。"],
- ["上下占格", "注意高字母、矮字母和下探字母的位置区别。"],
- ["字母比例", "注意字母大小和高矮比例，避免忽大忽小。"],
- ["口手同步", "边描边写时要同步轻声读出字母音或单词，帮助记忆。"],
- ["间隔均匀", "注意单词间隔均匀，避免挤在一起。"],
- ["笔顺规范", "注意字母笔顺和占格规范。"],
- ["大小写", "注意句首大写和专有名词大写。"],
- ["字母倾斜", "注意字母倾斜方向保持一致。"],
- ["易混字母", "注意区分 b/d、p/q、m/n 等易混字母。"],
- ["端正坐姿", "注意书写时的坐姿，做到一尺一寸一拳。"]
- ],
- "描写与抄写习惯": [
- ["先看后写", "书写前先观察范字结构、占格和笔顺，再开始动笔。"],
- ["只描不读", "描字母或单词时不要只动笔，建议同步轻声读出来。"],
- ["写得过快", "书写时不要急着完成，先保证笔顺、占格和线条稳定。"],
- ["范字对照", "仿写后要和范字对照，检查字母高度、宽度和间距。"],
- ["独立盖写", "描红后可以尝试盖住范字独立写，检查是否真正记住字形。"],
- ["减少涂改", "书写前先想清楚再落笔，减少反复涂改。"],
- ["对齐行线", "注意每一行书写位置保持整齐。"],
- ["书写速度", "在保证规范的基础上逐步提高书写速度。"]
- ],
- "拼写与语法": [
- ["漏写字母", "注意检查单词中是否有漏写字母。"],
- ["多写字母", "注意避免重复书写或多写字母。"],
- ["字母顺序", "注意单词中字母顺序的准确性。"],
- ["音形对应", "记单词时注意读音、字母组合和拼写之间的对应关系。"],
- ["单复数", "注意名词单复数形式，尤其是词尾 s。"],
- ["所有格", "注意所有格 's 的书写位置和标点。"],
- ["句末标点", "句子末尾要补充句号、问号或感叹号。"],
- ["语法细节", "注意句型中的 be 动词、助动词或时态细节。"],
- ["检查意识", "写完后要主动检查拼写、大小写和标点。"]
- ],
- "提交质量": [
- ["拍照清晰", "上传书写作业时注意光线和角度，保证字迹清楚。"],
- ["页面完整", "提交前确认每一页、每一题都已拍到并成功上传。"],
- ["页面对应", "注意上传内容要和任务页码对应，避免传错页面。"],
- ["漏拍漏传", "提交前确认图片数量和任务要求一致，避免漏拍或漏传。"],
- ["及时补交", "若老师反馈未看到作业，请及时补传完整页面。"]
- ]
- },
- improve: {
- "字母描写专项": [
- ["每日练字", "每天练习10分钟英文书写。"],
- ["先看后写", "书写前先观察字母结构、占格和笔顺，再开始书写。"],
- ["观察描仿", "按“观察范字—指读—描红—仿写”的顺序完成，不要一上来就直接写。"],
- ["边描边读", "描字母或单词时轻声读出来，让手写和发音同步建立记忆。"],
- ["单字母攻克", "一次重点练1-2个易错字母，先慢描3遍，再独立写2遍。"],
- ["描后盖写", "先描红，再盖住范字独立写一遍，检查是否能记住字形。"],
- ["四线定位", "用四线三格定位高字母、矮字母和下探字母的位置。"],
- ["慢写提质", "先保证笔顺和占格，再逐步提高书写速度。"],
- ["坐姿提醒", "书写时请家长协助提醒保持端正坐姿，保护视力和脊椎。"]
- ],
- "单词拼写专项": [
- ["易混字母专项", "b/d、p/q 每天各写一行，并边写边读。"],
- ["拼读记词", "记单词时先读音，再拆音节，最后书写，减少死记硬背。"],
- ["错词本", "将本次写错的单词整理到错词本，每天遮住中文或图片复写1遍。"],
- ["听写复盘", "听写后把错词按漏字母、顺序错、大小写错分类整理。"],
- ["单词分块描写", "长一点的单词先按音节或字母组合分块读，再一边读一边描写。"],
- ["遮词复写", "先看词读2遍，再遮住范词独立写，最后对照检查。"],
- ["描红仿写", "先观察示例，再描红1遍、仿写2遍，重点看占格和间距。"]
- ],
- "句子与检查方法": [
- ["拼写检查法", "写完后从右往左逐词检查，减少漏字母。"],
- ["三查法", "写完后检查三项：拼写、大小写、标点。"],
- ["句子自读", "句子写完后自己小声读一遍，检查是否通顺完整。"],
- ["框架落笔", "写句子前先确定主语、动词和关键词，再按顺序落笔。"],
- ["标点回看", "每写完一句都回看句末标点，确认句号、问号或感叹号。"],
- ["任务核对", "提交前核对页码、题号和完成数量，避免漏写。"]
- ],
- "提交与拍照": [
- ["拍照复查", "上传前先看一眼照片是否清晰、完整、无遮挡。"],
- ["补交完整", "若发现漏拍或传错，请补交完整页面，方便老师准确反馈。"],
- ["完成打勾", "每完成一项就在任务清单上打勾，减少漏写和漏传。"],
- ["页面核对", "提交前核对任务页码和上传图片是否一致，避免传错页面。"],
- ["光线角度", "拍照时保持页面平整、光线充足，尽量让整页内容都清楚入镜。"],
- ["家长协助核对", "提交前可请家长帮忙看一眼是否漏拍、模糊或传错。"]
- ]
- }
- }
- };
+      let saveTimer = null;
+      let toastTimer = null;
+      const $ = (s, root=document) => root.querySelector(s);
+      const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
 
- /* ========================================================
- 2. DOM 元素及基础功能
- ======================================================== */
- const els = {
- studentName: document.getElementById('studentName'),
- classDate: document.getElementById('classDate'),
- className: document.getElementById('className'),
- unitName: document.getElementById('unitName'),
- otherFeedback: document.getElementById('otherFeedback'),
- currentClass: document.getElementById('currentClass'),
- totalClass: document.getElementById('totalClass'),
- bottomText1: document.getElementById('bottomText1'),
- bottomText2: document.getElementById('bottomText2'),
- voiceContainer: document.getElementById('voiceTasksContainer'),
- writingContainer: document.getElementById('writingTasksContainer'),
- previewTable: document.getElementById('previewTasksTableBody'),
- notif: document.getElementById('notification'),
- importFileInput: document.getElementById('importFileInput')
- };
+      function uid(prefix='x') { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+      function escapeHTML(value) { return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+      function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+      function cleanLine(line) { return String(line||'').trim().replace(/^\s*(?:\d+[.、．)]|[（(]\d+[）)]|[-•·])\s*/,'').trim(); }
+      function splitLines(text) { return String(text||'').split(/\n+/).map(cleanLine).filter(Boolean); }
+      function normalizeNumbered(text) { return splitLines(text).map((line,i)=>`${i+1}. ${line}`).join('\n'); }
+      function appendText(current, text, numbered=false) {
+        const lines = [...splitLines(current)];
+        splitLines(text).forEach(line => { if (!lines.includes(line)) lines.push(line); });
+        return numbered ? lines.map((line,i)=>`${i+1}. ${line}`).join('\n') : lines.join('\n');
+      }
+      function newTask(seed={}) { return { id:seed.id||uid('t'), t:String(seed.t??seed.title??''), p:String(seed.p??seed.performance??''), f:String(seed.f??seed.focus??''), i:String(seed.i??seed.improve??seed.advice??''), open:seed.open!==false }; }
+      function newRecord(seed={}, prefix='r') { return { id:seed.id||uid(prefix), type:String(seed.type||''), word:String(seed.word||seed.target||''), part:String(seed.part||seed.highlight||''), note:String(seed.note||seed.issue||'') }; }
 
- function notify(msg, type = 'default') {
- els.notif.textContent = msg;
- els.notif.className = `fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl shadow-2xl transform transition-all duration-300 z-[100] flex items-center gap-3 font-bold text-sm ${type === 'error' ? 'bg-red-500' : 'bg-slate-800'} text-white translate-y-0`;
- setTimeout(() => els.notif.classList.add('translate-y-[-150%]'), 2500);
- }
+      function cloneState() {
+        return {
+          version:'7.0-offline', exportedAt:new Date().toISOString(),
+          n:state.n, d:state.d, c:state.c, u:state.u, cur:state.cur, tot:state.tot, b1:state.b1, b2:state.b2,
+          classroom:{
+            mainTasks:state.classroom.mainTasks, keyPoints:state.classroom.keyPoints,
+            spelling:state.classroom.spelling.map(r=>({...r})), pronunciation:state.classroom.pronunciation.map(r=>({...r})),
+            grammar:state.classroom.grammar, performance:state.classroom.performance, remarks:state.classroom.remarks
+          },
+          f:state.f, v:state.v.map(({id,t,p,f,i})=>({id,t,p,f,i})), w:state.w.map(({id,t,p,f,i})=>({id,t,p,f,i}))
+        };
+      }
 
- // 快捷按钮追加文本：重点关注 / 改进建议自动按添加顺序编号
- function stripLeadingNumber(line) {
- return String(line)
- .replace(/^\s*(?:\d+[\.、)）]|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]|[0-9]️⃣)\s*/, '')
- .trim();
- }
+      function normalizeBackup(raw) {
+        const src = raw && typeof raw === 'object' ? raw : {};
+        const cls = src.classroom && typeof src.classroom === 'object' ? src.classroom : {};
+        const pick = (...vals) => String(vals.find(v=>v!==undefined&&v!==null) ?? '');
+        const arr = (...vals) => vals.find(Array.isArray) || [];
+        return {
+          n:pick(src.n,src.studentName,src.student), d:pick(src.d,src.classDate,src.date), c:pick(src.c,src.className,src.class), u:pick(src.u,src.unitName,src.unit),
+          cur:pick(src.cur,src.currentClass), tot:pick(src.tot,src.totalClass), b1:pick(src.b1,src.bottomText1,'BOBOspeak英语工作室'), b2:pick(src.b2,src.bottomText2,'让英语不止是学科，更是未来竞争力！'),
+          classroom:{
+            mainTasks:pick(cls.mainTasks,src.mainTasks), keyPoints:pick(cls.keyPoints,src.keyPoints),
+            spelling:arr(cls.spelling,src.spellingRecords).map(x=>newRecord(x,'s')), pronunciation:arr(cls.pronunciation,src.pronunciationRecords).map(x=>newRecord(x,'p')),
+            grammar:pick(cls.grammar,src.grammar), performance:pick(cls.performance,src.classPerformance), remarks:pick(cls.remarks,src.classRemarks)
+          },
+          f:pick(src.f,src.teacherFeedback,src.otherFeedback),
+          v:arr(src.v,src.voice,src.voiceTasks).map(x=>newTask({...x,open:false})),
+          w:arr(src.w,src.writing,src.writingTasks).map(x=>newTask({...x,open:false})),
+          activeKind:src.activeKind==='writing'?'writing':'voice'
+        };
+      }
 
- function getNextNumber(textarea) {
- const lines = textarea.value.split('\n').map(l => l.trim()).filter(Boolean);
- return lines.length + 1;
- }
+      function applyState(next) {
+        ['n','d','c','u','cur','tot','b1','b2','f'].forEach(k=>state[k]=String(next[k]??''));
+        state.classroom={
+          mainTasks:String(next.classroom?.mainTasks||''), keyPoints:String(next.classroom?.keyPoints||''),
+          spelling:(next.classroom?.spelling||[]).map(x=>newRecord(x,'s')), pronunciation:(next.classroom?.pronunciation||[]).map(x=>newRecord(x,'p')),
+          grammar:String(next.classroom?.grammar||''), performance:String(next.classroom?.performance||''), remarks:String(next.classroom?.remarks||'')
+        };
+        state.v=(next.v||[]).map(newTask); state.w=(next.w||[]).map(newTask); state.activeKind=next.activeKind==='writing'?'writing':'voice';
+      }
 
- function appendText(textarea, text) {
- const shouldAutoNumber = textarea.classList.contains('task-focus') || textarea.classList.contains('task-impr');
- const rawLines = String(text).split('\n').map(l => stripLeadingNumber(l)).filter(Boolean);
- let appendLines;
+      function setDefaults() {
+        const now=new Date();
+        state.n=''; state.c=''; state.u=''; state.cur=''; state.tot=''; state.b1='BOBOspeak英语工作室'; state.b2='让英语不止是学科，更是未来竞争力！';
+        state.d=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        state.classroom={mainTasks:'',keyPoints:'',spelling:[],pronunciation:[],grammar:'',performance:'',remarks:''};
+        state.f=''; state.v=[]; state.w=[]; state.activeKind='voice';
+      }
 
- if (shouldAutoNumber) {
- let n = getNextNumber(textarea);
- appendLines = rawLines.map(line => `${n++}. ${line}`);
- } else {
- appendLines = rawLines;
- }
+      function saveLocal() {
+        clearTimeout(saveTimer);
+        $('#saveState').textContent='正在保存…';
+        saveTimer=setTimeout(()=>{
+          try { localStorage.setItem(STORAGE_KEY,JSON.stringify(cloneState())); $('#saveState').textContent='已在本机自动保存'; }
+          catch(e) { $('#saveState').textContent='本机保存受限'; }
+        },220);
+      }
 
- const current = textarea.value.trim();
- textarea.value = current ? current + '\n' + appendLines.join('\n') : appendLines.join('\n');
- sync();
- textarea.focus();
- }
+      function loadLocal() {
+        try { const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return false; applyState(normalizeBackup(JSON.parse(raw))); return true; }
+        catch(e) { return false; }
+      }
 
- // 生成选项按钮：支持「分组对象」和「普通数组」两种格式
- function escapeAttr(str) {
- return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
- }
+      function showToast(message) {
+        const toast=$('#toast'); toast.textContent=message; toast.classList.add('show'); clearTimeout(toastTimer);
+        toastTimer=setTimeout(()=>toast.classList.remove('show'),2300);
+      }
 
- function buildOptionButton(item, textareaSelector, colorClass) {
- const [label, text] = item;
- return `<button type="button" class="shortcut-btn ${colorClass}" data-text="${escapeAttr(text)}" onclick="appendText(this.closest('.task-item').querySelector('${textareaSelector}'), this.dataset.text)">${label}</button>`;
- }
+      function syncInputs() {
+        $$('[data-meta]').forEach(el=>el.value=state[el.dataset.meta]||'');
+        $('#keyPoints').value=state.classroom.keyPoints; $('#grammarPoints').value=state.classroom.grammar;
+        $('#classPerformance').value=state.classroom.performance; $('#classRemarks').value=state.classroom.remarks; $('#teacherFeedback').value=state.f;
+      }
 
- function createOptionBtns(list, textareaSelector, colorClass) {
- if (Array.isArray(list)) {
- return `<div class="flex flex-wrap gap-2">${list.map(item => buildOptionButton(item, textareaSelector, colorClass)).join('')}</div>`;
- }
- return `<div class="option-groups">${Object.entries(list).map(([group, items]) => `
- <div class="option-group collapsed">
- <button type="button" class="option-group-toggle" onclick="toggleOptionGroup(this)">
- <div class="min-w-0">
- <span class="option-group-title">${group}</span>
- <span class="option-group-meta">（${items.length}项）</span>
- </div>
- <i class="fa fa-chevron-down option-group-arrow"></i>
- </button>
- <div class="option-group-body">
- <div class="flex flex-wrap gap-2">${items.map(item => buildOptionButton(item, textareaSelector, colorClass)).join('')}</div>
- </div>
- </div>
- `).join('')}</div>`;
- }
+      function highlightedWord(word, parts) {
+        let html=escapeHTML(word||'');
+        const tokens=String(parts||'').split('|').map(s=>s.trim()).filter(Boolean).sort((a,b)=>b.length-a.length);
+        if(!tokens.length) return html || '—';
+        const safeWord=String(word||'');
+        const pattern=new RegExp(tokens.map(escapeRegExp).join('|'),'gi');
+        let last=0, out='', matched=false, m;
+        while((m=pattern.exec(safeWord))!==null){
+          matched=true; out+=escapeHTML(safeWord.slice(last,m.index)); out+=`<mark class="issue-mark">${escapeHTML(m[0])}</mark>`; last=m.index+m[0].length;
+          if(m[0].length===0) pattern.lastIndex++;
+        }
+        if(!matched) return html;
+        return out+escapeHTML(safeWord.slice(last));
+      }
 
- /* ========================================================
- 3. 核心交互：动态添加任务
- ======================================================== */
- function refreshTaskHeader(item) {
- const type = item.dataset.taskType || 'voice';
- const idx = Array.from(item.parentElement.children).indexOf(item) + 1;
- const content = item.querySelector('.task-content')?.value.trim();
- const perf = item.querySelector('.task-perf')?.value.trim();
- const fallback = content || perf || '点击展开编辑任务内容';
- const typeText = type === 'voice' ? 'Voice' : 'Writing';
- const summary = item.querySelector('.task-summary');
- const chip = item.querySelector('.task-chip');
- if (chip) chip.textContent = `${typeText} Task #${idx}`;
- if (summary) summary.textContent = fallback;
- }
+      function renderRecordEditor(type) {
+        const list=type==='spelling'?state.classroom.spelling:state.classroom.pronunciation;
+        const root=$(type==='spelling'?'#spellingList':'#pronList');
+        if(!list.length){ root.innerHTML='<div class="record-empty">还没有记录；需要时填写上方内容再点击“加入”。</div>'; return; }
+        root.innerHTML=list.map(r=>`
+          <div class="record-item" data-record-id="${r.id}" data-record-type="${type}">
+            <div class="record-word-preview">${highlightedWord(r.word,r.part)} ${r.type?`<span class="record-tag">${escapeHTML(r.type)}</span>`:''}</div>
+            <div class="record-note">标红：${escapeHTML(r.part||'未指定')}</div>
+            <div class="record-note">${escapeHTML(r.note||'暂无说明')}</div>
+            <button class="record-remove" type="button" title="删除">×</button>
+          </div>`).join('');
+        $$('.record-remove',root).forEach(btn=>btn.addEventListener('click',()=>{
+          const item=btn.closest('.record-item'); const key=item.dataset.recordType==='spelling'?'spelling':'pronunciation';
+          state.classroom[key]=state.classroom[key].filter(r=>r.id!==item.dataset.recordId); renderRecordEditor(key); renderPreview(); saveLocal();
+        }));
+      }
 
- function toggleTask(button) {
- const item = button.closest('.task-item');
- item.classList.toggle('collapsed');
- }
+      function addClassRecord(type) {
+        const isSpelling=type==='spelling';
+        const word=$(isSpelling?'#spellingWord':'#pronWord').value.trim();
+        const part=$(isSpelling?'#spellingPart':'#pronPart').value.trim();
+        const note=$(isSpelling?'#spellingNote':'#pronNote').value.trim();
+        if(!word){ showToast('请先填写完整单词'); $(isSpelling?'#spellingWord':'#pronWord').focus(); return; }
+        const record=newRecord({type:isSpelling?$('#spellingType').value:'',word,part,note},isSpelling?'s':'p');
+        state.classroom[isSpelling?'spelling':'pronunciation'].push(record);
+        $(isSpelling?'#spellingWord':'#pronWord').value=''; $(isSpelling?'#spellingPart':'#pronPart').value=''; $(isSpelling?'#spellingNote':'#pronNote').value='';
+        renderRecordEditor(type); renderPreview(); saveLocal(); $(isSpelling?'#spellingWord':'#pronWord').focus();
+      }
 
- function setTaskCollapsed(item, collapsed) {
- item.classList.toggle('collapsed', collapsed);
- }
+      function renderOptions(kind,field) {
+        const groups=HOMEWORK_OPTIONS[kind][field];
+        return `<details class="library"><summary>快捷评语库</summary><div class="option-groups">${Object.entries(groups).map(([name,items])=>`
+          <details class="option-group"><summary><span>${escapeHTML(name)}</span><span class="hint">${items.length}项</span></summary>
+          <div class="options">${items.map(([label,text])=>`<button class="option-btn" type="button" data-option="${escapeHTML(text)}">${escapeHTML(label)}</button>`).join('')}</div></details>`).join('')}</div></details>`;
+      }
 
- function toggleOptionGroup(button) {
- const group = button.closest('.option-group');
- if (group) group.classList.toggle('collapsed');
- }
+      function renderShortBox(kind) {
+        return `<details class="short-box"><summary>${kind==='voice'?'错音速记':'书写速记'}</summary>
+          <div class="short-grid"><input data-short-target placeholder="${kind==='voice'?'单词，如 water':'字母/单词，如 a'}"><input data-short-issue placeholder="${kind==='voice'?'问题音或发音提示':'书写问题点'}"><button class="btn btn-small" type="button" data-short-add>加入</button></div>
+        </details>`;
+      }
 
- function toggleOptionArea(button, expand) {
- const block = button.closest('.option-block');
- const groups = block ? block.querySelectorAll('.option-group') : [];
- groups.forEach(group => group.classList.toggle('collapsed', !expand));
- }
+      function renderTaskCard(task,kind,index) {
+        const title=task.t.trim()||`未命名${KIND[kind].label}任务 ${index+1}`;
+        const summary=task.p.trim()||task.f.trim()||task.i.trim()||'点击展开填写任务点评';
+        return `<article class="task-card ${task.open?'open':''}" data-kind="${kind}" data-id="${task.id}">
+          <button class="task-head" type="button" aria-expanded="${task.open?'true':'false'}"><span class="task-order">${String(index+1).padStart(2,'0')}</span><span class="task-head-copy"><span class="task-head-title">${escapeHTML(title)}</span><span class="task-head-summary">${escapeHTML(summary)}</span></span><span class="task-arrow">⌄</span></button>
+          <div class="task-body">
+            <div class="field"><label>具体任务内容</label><textarea data-task-field="t" placeholder="写明页码、材料或任务要求">${escapeHTML(task.t)}</textarea></div>
+            <section class="feedback-field"><div class="feedback-field-head"><strong>完成表现</strong><span class="hint">自然段</span></div><textarea data-task-field="p">${escapeHTML(task.p)}</textarea>${renderOptions(kind,'performance')}</section>
+            <section class="feedback-field focus"><div class="feedback-field-head"><strong>重点关注</strong><span class="hint">自动编号</span></div><textarea data-task-field="f">${escapeHTML(task.f)}</textarea>${renderShortBox(kind)}${renderOptions(kind,'focus')}</section>
+            <section class="feedback-field improve"><div class="feedback-field-head"><strong>改进建议</strong><span class="hint">自动编号</span></div><textarea data-task-field="i">${escapeHTML(task.i)}</textarea>${renderOptions(kind,'improve')}</section>
+            <div class="task-footer"><button class="btn btn-small btn-danger" type="button" data-remove-task>删除任务</button></div>
+          </div>
+        </article>`;
+      }
 
- function normalizePronIssue(raw) {
- const value = String(raw || '').trim();
- if (!value) return '';
- if (/音|发音|重音|尾音|连读|弱读|浊化|饱满|拉长|嘴型|舌尖||清楚|区分/.test(value)) return value;
- return `${value} 音需要再留意`;
- }
+      function renderTasks() {
+        Object.entries(KIND).forEach(([kind,cfg])=>{
+          const root=document.getElementById(cfg.list); const list=state[cfg.key];
+          root.innerHTML=list.length?list.map((t,i)=>renderTaskCard(t,kind,i)).join(''):'<div class="task-empty">当前没有任务。只有点击下方“新增任务”后才会显示任务卡片。</div>';
+          document.getElementById(cfg.count).textContent=list.length;
+        });
+        bindTaskEvents();
+      }
 
- function appendPronIssue(button, issueText) {
- const item = button.closest('.task-item');
- const wordInput = item.querySelector('.pron-word-input');
- const customInput = item.querySelector('.pron-custom-input');
- const focusArea = item.querySelector('.task-focus');
- const word = (wordInput?.value || '').trim();
- const issue = normalizePronIssue(issueText || customInput?.value || '');
- if (!word && !issue) {
- notify('先输入单词和问题音哦', 'error');
- return;
- }
- const line = word && issue ? `${word} ➡ ${issue}；` : (word ? `${word} ➡ 发音细节需要再留意；` : `${issue}；`);
- appendText(focusArea, line);
- if (wordInput) wordInput.value = '';
- if (customInput && !issueText) customInput.value = '';
- refreshTaskHeader(item);
- }
+      function taskFromCard(card) { const cfg=KIND[card.dataset.kind]; return state[cfg.key].find(t=>t.id===card.dataset.id); }
+      function refreshCard(card,task) { $('.task-head-title',card).textContent=task.t.trim()||'未命名任务'; $('.task-head-summary',card).textContent=task.p.trim()||task.f.trim()||task.i.trim()||'点击展开填写任务点评'; }
 
- function appendPronBulk(button) {
- const item = button.closest('.task-item');
- const bulk = item.querySelector('.pron-bulk-input');
- const focusArea = item.querySelector('.task-focus');
- const raw = (bulk?.value || '').trim();
- if (!raw) {
- notify('先粘贴错音内容哦', 'error');
- return;
- }
- const lines = raw
- .split(/[\n；;]+/)
- .map(s => s.trim())
- .filter(Boolean)
- .map(s => {
- const parts = s.split(/=>|➡|->|→|=|：|:/);
- const word = (parts[0] || '').trim();
- const issue = normalizePronIssue(parts.slice(1).join(':').trim());
- if (word && issue) return `${word} ➡ ${issue}；`;
- return s.endsWith('；') || s.endsWith(';') ? s.replace(/;$/, '；') : `${s}；`;
- });
- appendText(focusArea, lines.join('\n'));
- if (bulk) bulk.value = '';
- refreshTaskHeader(item);
- }
+      function bindTaskEvents() {
+        $$('.task-card').forEach(card=>{
+          const task=taskFromCard(card);
+          $('.task-head',card).addEventListener('click',()=>{ task.open=!task.open; card.classList.toggle('open',task.open); $('.task-head',card).setAttribute('aria-expanded',String(task.open)); });
+          $$('[data-task-field]',card).forEach(control=>{
+            control.addEventListener('input',e=>{ task[e.target.dataset.taskField]=e.target.value; refreshCard(card,task); renderPreview(); saveLocal(); });
+            if(['f','i'].includes(control.dataset.taskField)) control.addEventListener('blur',e=>{ const value=normalizeNumbered(e.target.value); e.target.value=value; task[e.target.dataset.taskField]=value; renderPreview(); saveLocal(); });
+          });
+          $$('[data-option]',card).forEach(btn=>btn.addEventListener('click',()=>{
+            const field=btn.closest('.feedback-field').querySelector('[data-task-field]').dataset.taskField;
+            task[field]=appendText(task[field],btn.dataset.option,field!=='p'); $(`[data-task-field="${field}"]`,card).value=task[field]; refreshCard(card,task); renderPreview(); saveLocal();
+          }));
+          const shortAdd=$('[data-short-add]',card);
+          shortAdd.addEventListener('click',()=>{
+            const box=shortAdd.closest('.short-box'); const target=$('[data-short-target]',box).value.trim(); const issue=$('[data-short-issue]',box).value.trim();
+            if(!target&&!issue){ showToast('请先填写单词/字母和问题点'); return; }
+            const line=target&&issue?`${target} ➡ ${issue.replace(/[；;。]+$/,'')}；`:target?`${target} ➡ 需要再留意；`:`${issue}；`;
+            task.f=appendText(task.f,line,true); $('[data-task-field="f"]',card).value=task.f; $('[data-short-target]',box).value=''; $('[data-short-issue]',box).value=''; refreshCard(card,task); renderPreview(); saveLocal();
+          });
+          $('[data-remove-task]',card).addEventListener('click',()=>{
+            if(!confirm('确定删除这条任务吗？')) return; const cfg=KIND[card.dataset.kind]; state[cfg.key]=state[cfg.key].filter(t=>t.id!==card.dataset.id); renderTasks(); renderPreview(); saveLocal();
+          });
+        });
+      }
 
- function normalizeWritingIssue(raw) {
- const value = String(raw || '').trim();
- if (!value) return '';
- if (/书写|占格|笔顺|大小写|间距|标点|点|漏写|多写|顺序|贴线|对齐|倾斜|单复数|所有格|格式/.test(value)) return value;
- return `${value} 需要再留意`;
- }
+      function addTask(kind) {
+        const cfg=KIND[kind]; state[cfg.key].forEach(t=>t.open=false); state[cfg.key].push(newTask()); switchTab(kind); renderTasks(); renderPreview(); saveLocal();
+        requestAnimationFrame(()=>{ const cards=$$(`.task-card[data-kind="${kind}"]`); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({behavior:'smooth',block:'center'}); $('[data-task-field="t"]',last).focus(); } });
+      }
 
- function appendWritingIssue(button, issueText) {
- const item = button.closest('.task-item');
- const targetInput = item.querySelector('.writing-target-input');
- const customInput = item.querySelector('.writing-custom-input');
- const focusArea = item.querySelector('.task-focus');
- const target = (targetInput?.value || '').trim();
- const issue = normalizeWritingIssue(issueText || customInput?.value || '');
- if (!target && !issue) {
- notify('先输入字母/单词和问题点哦', 'error');
- return;
- }
- const line = target && issue ? `${target} ➡ ${issue}；` : (target ? `${target} ➡ 书写细节需要再留意；` : `${issue}；`);
- appendText(focusArea, line);
- if (targetInput) targetInput.value = '';
- if (customInput && !issueText) customInput.value = '';
- refreshTaskHeader(item);
- }
+      function switchTab(kind) {
+        state.activeKind=kind;
+        $$('.task-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.kind===kind));
+        $('#voiceArea').classList.toggle('hidden',kind!=='voice'); $('#writingArea').classList.toggle('hidden',kind!=='writing');
+      }
 
- function appendWritingBulk(button) {
- const item = button.closest('.task-item');
- const bulk = item.querySelector('.writing-bulk-input');
- const focusArea = item.querySelector('.task-focus');
- const raw = (bulk?.value || '').trim();
- if (!raw) {
- notify('先粘贴书写问题内容哦', 'error');
- return;
- }
- const lines = raw
- .split(/[\n；;]+/)
- .map(s => s.trim())
- .filter(Boolean)
- .map(s => {
- const parts = s.split(/=>|➡|->|→|=|：|:/);
- const target = (parts[0] || '').trim();
- const issue = normalizeWritingIssue(parts.slice(1).join(':').trim());
- if (target && issue) return `${target} ➡ ${issue}；`;
- return s.endsWith('；') || s.endsWith(';') ? s.replace(/;$/, '；') : `${s}；`;
- });
- appendText(focusArea, lines.join('\n'));
- if (bulk) bulk.value = '';
- refreshTaskHeader(item);
- }
+      function formatDate(value) { if(!value) return '—'; const p=value.split('-'); return p.length===3?`${p[0]}年${Number(p[1])}月${Number(p[2])}日`:value; }
+      function renderBullets(text) { const lines=splitLines(text); return lines.length?lines.map((line,i)=>`<div class="bullet-line"><span class="bullet-num">${i+1}</span><span>${escapeHTML(line)}</span></div>`).join(''):'<span class="empty-text">暂无记录</span>'; }
+      function renderNumbered(text) { const lines=splitLines(text); return lines.length?lines.map((line,i)=>`<div class="numbered-line"><span class="number-badge">${i+1}</span><span>${escapeHTML(line)}</span></div>`).join(''):'<span class="empty-text">暂无记录</span>'; }
+      function renderPlain(text) { return String(text||'').trim()?escapeHTML(String(text).trim()).replace(/\n/g,'<br>'):'<span class="empty-text">暂无记录</span>'; }
+      function renderClassRecords(list) { return list.length?`<div class="class-records">${list.map(r=>`<div class="class-record"><div class="class-record-head">${r.type?`<span class="record-tag">${escapeHTML(r.type)}</span>`:''}<span class="class-word">${highlightedWord(r.word,r.part)}</span></div>${r.note?`<div class="class-note">${escapeHTML(r.note)}</div>`:''}</div>`).join('')}</div>`:'<span class="empty-text">暂无记录</span>'; }
 
- /* ========================================================
- 3. 核心交互：动态添加任务
- ======================================================== */
- function addTask(type, open = true) {
- const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
- const config = TASK_OPTIONS[type];
- const idx = container.children.length + 1;
- const div = document.createElement('div');
- div.className = `task-item border-l-4 ${type === 'voice' ? 'border-brand' : 'border-success'} ${open ? '' : 'collapsed'}`;
- div.dataset.taskType = type;
- 
- div.innerHTML = `
- <div class="task-header">
- <button type="button" class="task-header-left flex-1" onclick="toggleTask(this)">
- <span class="task-chip ${type === 'voice' ? 'bg-blue-100 text-brand' : 'bg-emerald-50 text-success'}">
- ${type === 'voice' ? 'Voice' : 'Writing'} Task #${idx}
- </span>
- <span class="task-summary">点击展开编辑任务内容</span>
- </button>
- <div class="task-header-actions">
- <button type="button" class="task-delete" title="删除任务" onclick="if(confirm('删除此项吗?')){this.closest('.task-item').remove();sync();}">
- <i class="fa fa-times-circle text-lg"></i>
- </button>
- <button type="button" class="task-delete" title="展开/收起" onclick="toggleTask(this)">
- <i class="fa fa-chevron-down task-arrow"></i>
- </button>
- </div>
- </div>
- <div class="task-body space-y-4">
- <div><label class="text-[10px] font-bold text-slate-400 mb-1 block">具体任务内容</label><textarea class="task-content input-field" rows="2"></textarea></div>
- <div class="option-block">
- <div class="option-section-title">
- <label class="text-[10px] font-bold text-slate-400 block">完成表现 (点击快捷输入)</label>
- <div class="option-mini-actions">
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
- <span class="text-slate-200">|</span>
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
- </div>
- </div>
- <div class="mb-2">${createOptionBtns(config.performance, '.task-perf', type === 'voice' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700')}</div>
- <textarea class="task-perf input-field" rows="2"></textarea>
- </div>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div class="option-block">
- <div class="option-section-title">
- <label class="text-[10px] font-bold text-slate-400 block">重点关注 <span class="font-normal text-slate-300">自动编号</span></label>
- <div class="option-mini-actions">
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
- <span class="text-slate-200">|</span>
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
- </div>
- </div>
- <div class="mb-2">${createOptionBtns(config.focus, '.task-focus', 'bg-slate-100 text-slate-600')}</div>
- ${type === 'voice' ? `
- <div class="pron-quick-box mb-2">
- <div class="pron-quick-title"><i class="fa fa-bolt"></i> 错音速记</div>
- <div class="flex flex-wrap gap-2 items-center">
- <input type="text" class="pron-mini-input pron-word-input w-28" placeholder="单词 water">
- <input type="text" class="pron-mini-input pron-custom-input flex-1 min-w-[160px]" placeholder="自定义：a 音再饱满一些">
- <button type="button" class="pron-chip" onclick="appendPronIssue(this)">加入</button>
- </div>
- <div class="flex flex-wrap gap-1.5">
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'a 音再饱满一些')">a饱满</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'a 音再拉长一些')">a拉长</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'ar 音可以适当拉长一些')">ar拉长</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'er 音自然弱化一些')">er弱读</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'r 音轻轻带出')">r轻读</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'th 音注意咬舌')">th咬舌</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, '尾音不要吞掉')">尾音</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, '重音位置需要再留意')">重音</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, 'st 不要拆成生硬的 s+t，t 轻轻带过，听感接近 sd')">st轻读</button>
- <button type="button" class="pron-chip" onclick="appendPronIssue(this, '连读需要更自然')">连读</button>
- </div>
- <div class="flex flex-wrap gap-2 items-start">
- <textarea class="pron-mini-input pron-bulk-input flex-1 min-w-[220px]" rows="2" placeholder="批量：water=a音再饱满；afternoon=a音再拉长"></textarea>
- <button type="button" class="pron-chip mt-1" onclick="appendPronBulk(this)">批量加入</button>
- </div>
- </div>` : `
- <div class="pron-quick-box mb-2">
- <div class="pron-quick-title"><i class="fa fa-pencil"></i> 书写速记</div>
- <div class="flex flex-wrap gap-2 items-center">
- <input type="text" class="pron-mini-input writing-target-input w-28" placeholder="字母/单词 a">
- <input type="text" class="pron-mini-input writing-custom-input flex-1 min-w-[160px]" placeholder="自定义：书写按书写体会更好">
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this)">加入</button>
- </div>
- <div class="flex flex-wrap gap-1.5">
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '书写按书写体会更好')">书写体</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '占格需要再留意')">占格</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '笔顺需要再规范')">笔顺</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '点轻点一下即可')">点轻点</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '单词间隔保持均匀')">间隔</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '贴近线条书写')">贴线</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '大小写需要再留意')">大小写</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '字母顺序需要再检查')">顺序</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '注意不要漏写字母')">漏写</button>
- <button type="button" class="pron-chip" onclick="appendWritingIssue(this, '句末标点需要补充完整')">标点</button>
- </div>
- <div class="flex flex-wrap gap-2 items-start">
- <textarea class="pron-mini-input writing-bulk-input flex-1 min-w-[220px]" rows="2" placeholder="批量：a=按书写体；i=点轻点；nose=漏写s"></textarea>
- <button type="button" class="pron-chip mt-1" onclick="appendWritingBulk(this)">批量加入</button>
- </div>
- </div>`}
- ${type === 'voice' ? `
- <div class="pron-quick-box mb-2">
- <div class="pron-quick-title"><i class="fa fa-sliders"></i> 程度缓和速记</div>
- <div class="flex flex-wrap gap-1.5">
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '整体完成情况不错，个别单词或字母音还需要再巩固。')">整体不错+个别</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '大部分内容能够准确完成，少数发音细节还需要继续练习。')">大部分准确</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '问题主要集中在少数几个单词或字母上，整体方向是正确的。')">少数集中</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '目前不是整体不会，而是准确性和稳定性还需要进一步提升。')">稳定性提升</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '能完成基础任务，部分内容需要借助提示后才能更准确地输出。')">需提示完成</button>
- </div>
- </div>` : `
- <div class="pron-quick-box mb-2">
- <div class="pron-quick-title"><i class="fa fa-sliders"></i> 程度缓和速记</div>
- <div class="flex flex-wrap gap-1.5">
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '整体完成情况不错，个别字母、单词或书写细节还需要再巩固。')">整体不错+个别</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '大部分内容书写比较规范，少数字母占格或笔顺还需要继续留意。')">大部分规范</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '问题主要集中在少数几个字母或单词上，整体完成方向是正确的。')">少数集中</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '目前不是整体不会，而是书写规范和检查稳定性还需要进一步提升。')">稳定性提升</button>
- <button type="button" class="pron-chip" onclick="appendText(this.closest('.task-item').querySelector('.task-focus'), '能完成基础书写任务，部分内容需要借助提示后才能写得更准确。')">需提示完成</button>
- </div>
- </div>`}
- <textarea class="task-focus input-field" rows="2"></textarea>
- </div>
- <div class="option-block">
- <div class="option-section-title">
- <label class="text-[10px] font-bold text-slate-400 block">改进建议 <span class="font-normal text-slate-300">自动编号</span></label>
- <div class="option-mini-actions">
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, true)">展开全部</button>
- <span class="text-slate-200">|</span>
- <button type="button" class="option-mini-btn" onclick="toggleOptionArea(this, false)">收起全部</button>
- </div>
- </div>
- <div class="mb-2">${createOptionBtns(config.improve, '.task-impr', type === 'voice' ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700')}</div>
- <textarea class="task-impr input-field" rows="2"></textarea>
- </div>
- </div>
- </div>
- `;
- container.appendChild(div);
- div.querySelectorAll('textarea').forEach(t => t.oninput = sync);
- refreshTaskHeader(div);
- sync();
- }
+      function renderHomework(kind) {
+        const cfg=KIND[kind], list=state[cfg.key];
+        return list.map((task,i)=>`<article class="homework-card ${kind==='writing'?'writing':''}"><div class="homework-title"><span class="homework-no">${i+1}</span><span>${escapeHTML(task.t.trim()||`未命名${cfg.label}任务`)}</span></div><div class="homework-rows">
+          <div class="homework-row"><div class="homework-row-label">表现记录</div><div class="homework-row-value">${renderPlain(task.p)}</div></div>
+          <div class="homework-row"><div class="homework-row-label">重点关注</div><div class="homework-row-value">${renderNumbered(task.f)}</div></div>
+          <div class="homework-row"><div class="homework-row-label">改进建议</div><div class="homework-row-value">${renderNumbered(task.i)}</div></div>
+        </div></article>`).join('');
+      }
 
- /* ========================================================
- 4. 数据提取机制与核心同步逻辑
- ======================================================== */
- function getFormData() {
- const gather = (container) => {
- return Array.from(container.querySelectorAll('.task-item')).map(item => ({
- t: item.querySelector('.task-content').value,
- p: item.querySelector('.task-perf').value,
- f: item.querySelector('.task-focus').value,
- i: item.querySelector('.task-impr').value
- }));
- };
- return {
- n: els.studentName.value, d: els.classDate.value, c: els.className.value, u: els.unitName.value,
- f: els.otherFeedback.value, cur: els.currentClass.value, tot: els.totalClass.value,
- b1: els.bottomText1.value, b2: els.bottomText2.value,
- v: gather(els.voiceContainer), w: gather(els.writingContainer)
- };
- }
+      function renderPreview() {
+        const hasClassCore=state.classroom.keyPoints.trim();
+        const hasClassFeedback=state.classroom.spelling.length||state.classroom.pronunciation.length||state.classroom.grammar.trim()||state.classroom.performance.trim()||state.classroom.remarks.trim();
+        const hasHomework=state.v.length||state.w.length;
+        const cur=parseFloat(state.cur)||0, tot=parseFloat(state.tot)||0, pct=tot>0?Math.min(100,Math.round(cur/tot*100)):0;
+        $('#preview').innerHTML=`
+          <header class="report-cover"><div class="report-kicker">Classroom &amp; Homework Feedback</div><h2>课堂与课后学习反馈单</h2><p>同步课堂表现与上节课任务，让本节课后的辅导更有方向。</p><div class="student-line"><div class="student-name">${escapeHTML(state.n||'学生姓名')}</div><div class="report-date">${escapeHTML(formatDate(state.d))}</div></div></header>
+          <div class="report-content">
+            <div class="report-meta">${[['Student / 姓名',state.n||'—'],['Class / 班级',state.c||'—'],['Date / 日期',formatDate(state.d)],['Unit / 单元',state.u||'—']].map(([l,v])=>`<div class="meta-cell"><div class="meta-label">${escapeHTML(l)}</div><div class="meta-value">${escapeHTML(v)}</div></div>`).join('')}</div>
+            ${hasClassCore?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">课</div><div class="report-section-title">本节重点知识点 <small>Today's Key Learning</small></div></div><div class="focus-grid"><div class="focus-card full"><div class="focus-card-title">课后重点消化</div><div class="focus-card-content">${renderBullets(state.classroom.keyPoints)}</div></div></div></section>`:''}
+            ${hasClassFeedback?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">评</div><div class="report-section-title">课堂学习反馈 <small>Classroom Feedback</small></div></div><div class="focus-grid">
+              ${state.classroom.spelling.length?`<div class="focus-card"><div class="focus-card-title">单词拼写／拆分／默写</div><div class="focus-card-content">${renderClassRecords(state.classroom.spelling)}</div></div>`:''}
+              ${state.classroom.pronunciation.length?`<div class="focus-card"><div class="focus-card-title">单词发音</div><div class="focus-card-content">${renderClassRecords(state.classroom.pronunciation)}</div></div>`:''}
+              ${state.classroom.grammar.trim()?`<div class="focus-card full"><div class="focus-card-title">课堂语法与知识点</div><div class="focus-card-content">${renderBullets(state.classroom.grammar)}</div></div>`:''}
+              ${state.classroom.performance.trim()?`<div class="focus-card"><div class="focus-card-title">课堂表现概况</div><div class="focus-card-content">${renderPlain(state.classroom.performance)}</div></div>`:''}
+              ${state.classroom.remarks.trim()?`<div class="focus-card"><div class="focus-card-title">课堂备注</div><div class="focus-card-content">${renderPlain(state.classroom.remarks)}</div></div>`:''}
+            </div></section>`:''}
+            ${hasHomework?`<section class="report-section homework"><div class="report-section-head"><div class="report-section-icon">后</div><div class="report-section-title">上节课课后任务反馈 <small>Previous Homework</small></div></div><div class="homework-list">${renderHomework('voice')}${renderHomework('writing')}</div></section>`:''}
+            <section class="teacher-note"><div class="teacher-note-head"><div class="teacher-note-title">本节课后辅导提示</div><div class="teacher-note-en">Guidance for Home Review</div></div><div class="teacher-note-content">${state.f.trim()?escapeHTML(state.f.trim()):'请结合本节课堂重点、标红内容以及上节课任务建议进行针对性复习。'}</div></section>
+            ${tot>0?`<div class="progress-wrap"><div class="progress-head"><span>COURSE PROGRESS</span><span>${cur.toFixed(1)} / ${tot.toFixed(1)} Hours</span></div><div class="progress-track"><div class="progress-bar" style="width:${pct}%"></div></div></div>`:''}
+            <footer class="report-footer"><span>${escapeHTML(state.b1||'BOBOspeak英语工作室')}</span><span>${escapeHTML(state.b2||'让英语不止是学科，更是未来竞争力！')}</span></footer>
+          </div>`;
+      }
 
- let autoSaveTimeout;
- function triggerAutoSave() {
- clearTimeout(autoSaveTimeout);
- autoSaveTimeout = setTimeout(() => {
- localStorage.setItem('bobo_feedback_pro_autosave', JSON.stringify(getFormData()));
- const statusEl = document.getElementById('saveStatus');
- if(statusEl) {
- statusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> 已自动保存';
- setTimeout(() => {
- statusEl.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 实时预览同步中';
- }, 1500);
- }
- }, 500); 
- }
+      function downloadBlob(blob,name) { const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }
+      function filename(prefix,ext) { const n=(state.n||'未命名学生').replace(/[\\/:*?"<>|]/g,'_'); return `${n}_${prefix}_${state.d||new Date().toISOString().slice(0,10)}.${ext}`; }
+      function exportJSON() { downloadBlob(new Blob([JSON.stringify(cloneState(),null,2)],{type:'application/json;charset=utf-8'}),filename('课堂与课后反馈备份','json')); showToast('备份已导出'); }
 
- function escapeHTML(value) {
- return String(value)
- .replace(/&/g, '&amp;')
- .replace(/</g, '&lt;')
- .replace(/>/g, '&gt;')
- .replace(/"/g, '&quot;')
- .replace(/'/g, '&#39;');
- }
+      async function importJSON(file) {
+        if(!file) return;
+        try { const parsed=JSON.parse(await file.text()); applyState(normalizeBackup(parsed)); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderTasks(); renderPreview(); saveLocal(); showToast('备份已导入；旧版语音和书写任务已兼容'); }
+        catch(e) { showToast('导入失败，请确认文件为有效 JSON 备份'); }
+        finally { $('#importFile').value=''; }
+      }
 
- // 预览区将自动编号渲染成蓝色数字，下载图片时也会保留颜色
- function formatNumberedText(value) {
- const text = String(value || '').trim();
- if (!text) return '-';
- const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
- return `<div class="numbered-text">${lines.map(line => {
- const match = line.match(/^(\d+)[\.、\)）]\s*(.*)$/);
- if (match) {
- return `<div class="numbered-line"><span class="num-badge">${escapeHTML(match[1])}</span><span>${escapeHTML(match[2])}</span></div>`;
- }
- return `<div class="numbered-line"><span>${escapeHTML(line)}</span></div>`;
- }).join('')}</div>`;
- }
+      async function exportImage() {
+        const btn=$('#imageBtn'), old=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span>…</span><span class="btn-label">生成中</span>';
+        try {
+          if(document.fonts?.ready) await document.fonts.ready;
+          const clone=$('#preview').cloneNode(true); clone.style.width='900px'; clone.style.borderRadius='0'; clone.style.boxShadow='none';
+          const stage=document.createElement('div'); stage.className='capture-stage'; stage.appendChild(clone); document.body.appendChild(stage);
+          const width=900, height=Math.ceil(clone.scrollHeight);
+          const css=Array.from(document.styleSheets).map(sheet=>{try{return Array.from(sheet.cssRules).map(r=>r.cssText).join('\n')}catch(e){return''}}).join('\n');
+          const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;background:#fff"><style>${css}</style>${clone.outerHTML}</div></foreignObject></svg>`;
+          const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'})); const img=new Image(); await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+          const scale=2, canvas=document.createElement('canvas'); canvas.width=width*scale; canvas.height=height*scale; const ctx=canvas.getContext('2d'); ctx.scale(scale,scale); ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0,width,height); URL.revokeObjectURL(url); stage.remove();
+          const blob=await new Promise(res=>canvas.toBlob(res,'image/png',1)); if(!blob) throw new Error('PNG'); downloadBlob(blob,filename('课堂与课后学习反馈单','png')); showToast('反馈图片已生成');
+        } catch(e) { $('.capture-stage')?.remove(); showToast('当前浏览器生成图片受限，可使用“打印”保存为 PDF'); }
+        finally { btn.disabled=false; btn.innerHTML=old; }
+      }
 
- function formatPlainText(value) {
- const text = String(value || '').trim();
- return text ? escapeHTML(text).replace(/\n/g, '<br>') : '-';
- }
+      function bind() {
+        $$('[data-meta]').forEach(el=>el.addEventListener('input',()=>{state[el.dataset.meta]=el.value;renderPreview();saveLocal()}));
+        $$('[data-classroom]').forEach(el=>el.addEventListener('input',()=>{state.classroom[el.dataset.classroom]=el.value;renderPreview();saveLocal()}));
+        $('#teacherFeedback').addEventListener('input',e=>{state.f=e.target.value;renderPreview();saveLocal()});
+        $('#addSpelling').addEventListener('click',()=>addClassRecord('spelling')); $('#addPron').addEventListener('click',()=>addClassRecord('pronunciation'));
+        ['spellingNote','pronNote'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addClassRecord(id==='spellingNote'?'spelling':'pronunciation')}}));
+        PRON_PRESETS.forEach(([label,text])=>{ const btn=document.createElement('button'); btn.type='button'; btn.className='quick-chip'; btn.textContent=label; btn.addEventListener('click',()=>{$('#pronNote').value=text;$('#pronPart').focus()}); $('#pronQuickRow').appendChild(btn); });
+        $$('[data-append]').forEach(btn=>btn.addEventListener('click',()=>{const area=document.getElementById(btn.dataset.append);area.value=appendText(area.value,btn.dataset.text,false);area.dispatchEvent(new Event('input',{bubbles:true}))}));
+        $$('[data-feedback-template]').forEach(btn=>btn.addEventListener('click',()=>{$('#teacherFeedback').value=btn.dataset.feedbackTemplate;state.f=btn.dataset.feedbackTemplate;renderPreview();saveLocal()}));
+        $$('.task-tab').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.kind))); $$('.add-task').forEach(btn=>btn.addEventListener('click',()=>addTask(btn.dataset.kind)));
+        $('#exportBtn').addEventListener('click',exportJSON); $('#importBtn').addEventListener('click',()=>$('#importFile').click()); $('#importFile').addEventListener('change',e=>importJSON(e.target.files[0]));
+        $('#printBtn').addEventListener('click',()=>window.print()); $('#imageBtn').addEventListener('click',exportImage);
+        $('#resetBtn').addEventListener('click',()=>{if(!confirm('确定清空当前全部内容吗？建议先导出备份。'))return;setDefaults();syncInputs();switchTab('voice');renderRecordEditor('spelling');renderRecordEditor('pronunciation');renderTasks();renderPreview();localStorage.removeItem(STORAGE_KEY);saveLocal();showToast('已清空，可开始填写新的反馈')});
+      }
 
- function sync() {
- document.getElementById('previewName').textContent = els.studentName.value || '___________';
- document.getElementById('previewDate').textContent = els.classDate.value || '___________';
- document.getElementById('previewClass').textContent = els.className.value || '___________';
- document.getElementById('previewUnit').textContent = els.unitName.value || '___________';
- document.getElementById('previewBottomText1').textContent = els.bottomText1.value;
- document.getElementById('previewBottomText2').textContent = els.bottomText2.value;
- 
- const feedback = els.otherFeedback.value.trim();
- document.getElementById('previewOtherFeedback').textContent = feedback || '老师暂未填写额外评价';
-
- const cur = parseFloat(els.currentClass.value) || 0;
- const tot = parseFloat(els.totalClass.value) || 0;
- const pct = tot > 0 ? Math.min(Math.round((cur / tot) * 100), 100) : 0;
- document.getElementById('previewClassProgressText').textContent = `${cur.toFixed(1)} / ${tot.toFixed(1)} (Hours)`;
- document.getElementById('previewClassProgressBar').style.width = pct + '%';
-
- document.querySelectorAll('.task-item').forEach(refreshTaskHeader);
-
- els.previewTable.innerHTML = '';
- const buildRows = (container, label) => {
- const items = container.querySelectorAll('.task-item');
- const isWriting = label === '书写';
- const pillClass = isWriting ? 'feedback-pill-writing' : 'feedback-pill-voice';
- items.forEach((item) => {
- const card = document.createElement('div');
- card.className = 'feedback-card';
- const content = formatPlainText(item.querySelector('.task-content').value);
- const perf = formatPlainText(item.querySelector('.task-perf').value);
- const focus = formatNumberedText(item.querySelector('.task-focus').value);
- const impr = formatNumberedText(item.querySelector('.task-impr').value);
- card.innerHTML = `
- <div class="feedback-card-header">
- <span class="feedback-pill ${pillClass}">${label}</span>
- <div class="feedback-title">${content}</div>
- </div>
- <div class="feedback-card-body">
- <div class="feedback-col">
- <div class="feedback-col-title">表现记录</div>
- <div class="feedback-col-content">${perf}</div>
- </div>
- <div class="feedback-col">
- <div class="feedback-col-title">重点关注</div>
- <div class="feedback-col-content">${focus}</div>
- </div>
- <div class="feedback-col">
- <div class="feedback-col-title">改进建议</div>
- <div class="feedback-col-content">${impr}</div>
- </div>
- </div>
- `;
- els.previewTable.appendChild(card);
- });
- };
-
- buildRows(els.voiceContainer, '语音');
- buildRows(els.writingContainer, '书写');
- triggerAutoSave();
- }
-
- function loadDataIntoForm(data) {
- els.studentName.value = data.n || ''; 
- els.classDate.value = data.d || new Date().toISOString().split('T')[0]; 
- els.className.value = data.c || ''; 
- els.unitName.value = data.u || '';
- els.otherFeedback.value = data.f || ''; 
- els.currentClass.value = data.cur || ''; 
- els.totalClass.value = data.tot || '';
- els.bottomText1.value = data.b1 || 'BOBOspeak英语工作室'; 
- els.bottomText2.value = data.b2 || '让英语不止是学科，更是未来竞争力！🚀';
- 
- els.voiceContainer.innerHTML = ''; 
- els.writingContainer.innerHTML = '';
- 
- const loadTasks = (items, type) => {
- if (items && items.length > 0) {
- items.forEach(item => {
- addTask(type, false);
- const container = type === 'voice' ? els.voiceContainer : els.writingContainer;
- const last = container.lastElementChild;
- if(last) {
- last.querySelector('.task-content').value = item.t || '';
- last.querySelector('.task-perf').value = item.p || '';
- last.querySelector('.task-focus').value = item.f || '';
- last.querySelector('.task-impr').value = item.i || '';
- }
- });
- } else {
- addTask(type, true);
- }
- };
-
- loadTasks(data.v, 'voice');
- loadTasks(data.w, 'writing');
- sync();
- }
-
- /* ========================================================
- 5. 数据保存、导入导出与下载功能
- ======================================================== */
- document.getElementById('downloadBtn').onclick = () => {
- const node = document.getElementById('previewContainer');
- const sName = els.studentName.value.trim() || '未命名学生';
- const dateStr = els.classDate.value || new Date().toISOString().split('T')[0];
- 
- notify('正在生成高清报告单...');
- html2canvas(node, { scale: 2, useCORS: true }).then(canvas => {
- const link = document.createElement('a');
- link.download = `${sName}-课后任务情况反馈单_${dateStr}.png`;
- link.href = canvas.toDataURL('image/png');
- link.click();
- notify('报告下载成功！', 'success');
- });
- };
-
- document.getElementById('exportBtn').onclick = () => {
- const dataStr = JSON.stringify(getFormData(), null, 2);
- const blob = new Blob([dataStr], { type: "application/json" });
- const url = URL.createObjectURL(blob);
- const link = document.createElement('a');
- const sName = els.studentName.value.trim() || '未命名学生';
- const dateStr = els.classDate.value || new Date().toISOString().split('T')[0];
- link.download = `${sName}_数据备份_${dateStr}.json`;
- link.href = url;
- link.click();
- URL.revokeObjectURL(url);
- notify('JSON数据导出成功！', 'success');
- };
-
- document.getElementById('importBtn').onclick = () => {
- els.importFileInput.click();
- };
-
- els.importFileInput.addEventListener('change', (e) => {
- const file = e.target.files[0];
- if (!file) return;
- const reader = new FileReader();
- reader.onload = (event) => {
- try {
- const importedData = JSON.parse(event.target.result);
- loadDataIntoForm(importedData);
- notify('JSON数据导入成功！', 'success');
- } catch (err) {
- notify('文件格式错误，导入失败', 'error');
- }
- };
- reader.readAsText(file);
- e.target.value = ''; 
- });
-
- document.getElementById('saveBtn').onclick = () => {
- localStorage.setItem('bobo_feedback_pro', JSON.stringify(getFormData()));
- notify('手动存档成功！(其实浏览器也有在自动保存哦)');
- };
-
- document.getElementById('restoreBtn').onclick = () => {
- const data = JSON.parse(localStorage.getItem('bobo_feedback_pro'));
- if(!data) return notify('未找到历史手动存档', 'error');
- loadDataIntoForm(data);
- notify('已恢复手动保存的进度');
- };
-
- document.getElementById('resetBtn').onclick = () => {
- if(confirm('确定清空当前所有内容并刷新吗？(将清除自动保存的内容)')) {
- localStorage.removeItem('bobo_feedback_pro_autosave');
- location.reload();
- }
- };
-
- /* ========================================================
- 6. 初始化
- ======================================================== */
- window.onload = () => {
- const autoSavedData = localStorage.getItem('bobo_feedback_pro_autosave');
- if (autoSavedData) {
- try {
- const parsedData = JSON.parse(autoSavedData);
- loadDataIntoForm(parsedData);
- notify('已自动恢复上次没写完的进度 🚀', 'success');
- } catch(e) {
- els.classDate.value = new Date().toISOString().split('T')[0];
- addTask('voice');
- addTask('writing');
- sync();
- }
- } else {
- els.classDate.value = new Date().toISOString().split('T')[0];
- addTask('voice');
- addTask('writing');
- sync();
- }
- 
- [els.studentName, els.classDate, els.className, els.unitName, els.otherFeedback, els.currentClass, els.totalClass, els.bottomText1, els.bottomText2].forEach(el => el.oninput = sync);
- 
- document.getElementById('addVoiceTask').onclick = () => addTask('voice');
- document.getElementById('addWritingTask').onclick = () => addTask('writing');
- };
- </script>
+      function init() {
+        setDefaults(); loadLocal(); syncInputs(); switchTab(state.activeKind); renderRecordEditor('spelling'); renderRecordEditor('pronunciation'); renderTasks(); renderPreview(); bind();
+      }
+      init();
+    })();
+  </script>
 </body>
 </html>
