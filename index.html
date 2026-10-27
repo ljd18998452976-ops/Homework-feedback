@@ -159,6 +159,7 @@
     .record-item { padding: 8px 9px; display: grid; grid-template-columns: minmax(120px,.8fr) minmax(100px,.75fr) minmax(160px,1.45fr) auto; gap: 7px; align-items: center; border: 1px solid #e2e7ef; border-radius: 10px; background: white; }
     .record-word-preview { min-width: 0; color: #26344d; font-size: 12px; font-weight: 900; overflow-wrap: anywhere; }
     mark.issue-mark { padding: 0 1px; color: var(--red); background: #ffe1e3; border-radius: 3px; font-weight: 900; }
+    .phoneme-slash { margin: 0 2px; color: #a3adbd; font-weight: 800; }
     .record-note { color: #617087; font-size: 10px; overflow-wrap: anywhere; }
     .record-tag { padding: 2px 6px; display: inline-block; border-radius: 5px; color: #8b5c1d; background: var(--amber-soft); font-size: 9px; font-weight: 800; }
     .record-remove { width: 29px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 8px; color: #a7afbc; background: transparent; cursor: pointer; }
@@ -205,8 +206,12 @@
     .option-btn:hover { border-color: #aebfdf; color: var(--blue-deep); background: var(--blue-soft); }
     details.short-box { margin-top: 8px; padding: 9px; border: 1px solid #e7dcc9; border-radius: 9px; background: var(--amber-soft); }
     details.short-box > summary { color: #755022; cursor: pointer; font-size: 10px; font-weight: 900; list-style: none; }
-    .short-grid { margin-top: 8px; display: grid; grid-template-columns: .75fr 1.25fr auto; gap: 6px; }
+    .short-grid { margin-top: 8px; display: grid; grid-template-columns: .9fr .7fr 1.35fr auto; gap: 6px; }
     .short-grid input { height: 34px; border-color: #decfb6; font-size: 11px; }
+    .task-mark-list { margin-top: 8px; display: grid; gap: 6px; }
+    .task-mark-list .record-item { grid-template-columns: minmax(110px,.9fr) minmax(0,1.4fr) auto; }
+    .task-mark-list .record-word-preview { font-size: 12px; }
+    .short-help { margin-top: 6px; color: #8a6c42; font-size: 9px; }
     .task-footer { margin-top: 12px; padding-top: 10px; display: flex; justify-content: flex-end; border-top: 1px solid #edf0f4; }
     .add-task { width: 100%; margin-top: 10px; min-height: 42px; border: 1px dashed #b8c5d8; border-radius: 11px; color: var(--blue); background: rgba(255,255,255,.65); cursor: pointer; font-weight: 800; }
     .add-task[data-kind="writing"] { border-color: #b8cfc5; color: var(--green); }
@@ -226,56 +231,69 @@
     .student-name { font-size: 18px; font-weight: 900; }
     .report-date { color: #c8d3e4; font-size: 10px; text-align: right; }
     .report-content { padding: 22px 24px 25px; }
-    .report-meta { margin-bottom: 19px; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid #e0e5ed; border-radius: 12px; background: #fafbfc; }
-    .meta-cell { min-width: 0; padding: 10px; border-right: 1px solid #e5e9ef; }
-    .meta-cell:last-child { border-right: 0; }
-    .meta-label { color: #8b95a7; font-size: 8px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
-    .meta-value { margin-top: 2px; color: #2f3c56; font-size: 10px; font-weight: 800; overflow-wrap: anywhere; }
+    .report-meta { margin-bottom: 19px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border: 1px solid #e0e5ed; border-radius: 12px; background: #fafbfc; }
+    .meta-cell { min-width: 0; padding: 12px; border-right: 1px solid #e5e9ef; }
+    .meta-cell:nth-child(2n) { border-right: 0; }
+    .meta-cell:nth-child(-n+2) { border-bottom: 1px solid #e5e9ef; }
+    .meta-label { color: #8b95a7; font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+    .meta-value { margin-top: 3px; color: #2f3c56; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
     .report-section { margin-top: 21px; }
     .report-section:first-of-type { margin-top: 0; }
     .report-section-head { margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
     .report-section-icon { width: 28px; height: 28px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 8px; color: var(--blue); background: var(--blue-soft); font-size: 10px; font-weight: 900; }
     .report-section.homework .report-section-icon { color: var(--green); background: var(--green-soft); }
-    .report-section-title { font-size: 12px; font-weight: 900; }
-    .report-section-title small { margin-left: 5px; color: #98a1b0; font-size: 8px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
-    .focus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .focus-card { padding: 11px 12px; border: 1px solid #e1e6ee; border-radius: 11px; background: #fbfcfe; }
-    .focus-card.full { grid-column: 1 / -1; }
+    .report-section-title { font-size: 14px; font-weight: 900; }
+    .report-section-title small { margin-left: 5px; color: #98a1b0; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .focus-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; }
+    .focus-card { width: 100%; padding: 14px 15px; border: 1px solid #e1e6ee; border-radius: 11px; background: #fbfcfe; }
+    .focus-card.full { grid-column: auto; }
     .focus-card.recall-card { border-color: #ddd5ee; background: #faf8ff; }
     .recall-card .focus-card-title { color: var(--violet); }
-    .recall-description { margin-bottom: 8px; color: #82758f; font-size: 9px; }
-    .focus-card-title { margin-bottom: 6px; color: #6a768b; font-size: 9px; font-weight: 900; }
-    .focus-card-content { color: #445168; font-size: 10px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .recall-description { margin-bottom: 8px; color: #82758f; font-size: 11px; }
+    .focus-card-title { margin-bottom: 7px; color: #6a768b; font-size: 12px; font-weight: 900; }
+    .focus-card-content { color: #445168; font-size: 13px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
     .bullet-line { display: flex; align-items: flex-start; gap: 6px; }
     .bullet-line + .bullet-line { margin-top: 5px; }
     .bullet-num { min-width: 17px; height: 17px; padding: 0 3px; display: inline-grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 7px; font-weight: 900; }
     .class-records { display: grid; gap: 5px; }
-    .class-record { padding: 7px 8px; border: 1px solid #e4e8ef; border-radius: 8px; background: white; }
+    .classroom-word-card .class-records { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+    .classroom-word-card .class-record { min-height: 66px; padding: 9px 10px; }
+    .classroom-word-card .class-record-head { gap: 5px; }
+    .classroom-word-card .class-word { font-size: 13px; }
+    .classroom-word-card .class-note { font-size: 11px; line-height: 1.55; }
+    .class-record { padding: 10px 11px; border: 1px solid #e4e8ef; border-radius: 8px; background: white; }
     .class-record-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-    .class-word { color: #24334d; font-size: 11px; font-weight: 900; letter-spacing: .02em; overflow-wrap: anywhere; }
-    .class-note { margin-top: 3px; color: #657188; font-size: 9px; line-height: 1.65; }
+    .class-word { color: #24334d; font-size: 15px; font-weight: 900; letter-spacing: .02em; overflow-wrap: anywhere; }
+    .class-note { margin-top: 4px; color: #657188; font-size: 12px; line-height: 1.7; }
     .empty-text { color: #a0a8b6; }
     .homework-list { display: grid; gap: 8px; }
-    .homework-card { overflow: hidden; border: 1px solid #dce4ef; border-radius: 11px; background: white; }
+    .homework-card { overflow: hidden; border: 1px solid #dce4ef; border-radius: 12px; background: white; }
     .homework-card.writing { border-color: #d9e6e0; }
-    .homework-title { padding: 8px 10px; display: flex; align-items: flex-start; gap: 8px; border-bottom: 1px solid #e7ebf1; color: #2d4777; background: #f4f7fc; font-size: 10px; font-weight: 900; }
+    .homework-title { padding: 11px 12px; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid #e7ebf1; color: #263c66; background: #f4f7fc; font-size: 13px; font-weight: 900; }
     .homework-card.writing .homework-title { border-bottom-color: #e1eae6; color: #466f5e; background: #f3f8f5; }
-    .homework-no { width: 18px; height: 18px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 8px; }
-    .homework-card.writing .homework-no { background: var(--green); }
-    .homework-rows { padding: 3px 9px 6px; }
-    .homework-row { padding: 7px 0; display: grid; grid-template-columns: 61px minmax(0,1fr); gap: 7px; border-bottom: 1px dashed #e5e9ef; }
+    .homework-kind-tag { min-width: 39px; height: 22px; padding: 0 8px; display: inline-grid; flex: 0 0 auto; place-items: center; border-radius: 999px; color: var(--blue); background: #e8f1ff; font-size: 9px; font-weight: 900; }
+    .homework-card.writing .homework-kind-tag { color: var(--green); background: #e6f5ed; }
+    .homework-title-text { min-width: 0; line-height: 1.45; }
+    .homework-rows { padding: 0 11px 4px; }
+    .homework-row { padding: 10px 1px; display: block; border-bottom: 1px dashed #e5e9ef; }
     .homework-row:last-child { border-bottom: 0; }
-    .homework-row-label { color: #828c9e; font-size: 8px; font-weight: 900; }
-    .homework-row-value { color: #465166; font-size: 9px; line-height: 1.72; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .homework-row-label { margin-bottom: 6px; color: #7c879b; font-size: 9px; font-weight: 900; letter-spacing: .06em; }
+    .homework-row-value { color: #465166; font-size: 12px; line-height: 1.78; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .homework-row-value .class-records { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+    .homework-row-value .class-record { min-height: 56px; padding: 8px 9px; border-radius: 7px; }
+    .homework-row-value .class-record-head { gap: 4px; }
+    .homework-row-value .record-tag { display: none; }
+    .homework-row-value .class-word { font-size: 12px; }
+    .homework-row-value .class-note { margin-top: 2px; font-size: 10px; line-height: 1.48; }
     .numbered-line { display: flex; align-items: flex-start; gap: 5px; }
     .numbered-line + .numbered-line { margin-top: 4px; }
     .number-badge { min-width: 16px; height: 16px; padding: 0 3px; display: inline-grid; flex: 0 0 auto; place-items: center; border-radius: 5px; color: white; background: var(--blue); font-size: 7px; font-weight: 900; }
     .homework-card.writing .number-badge { background: var(--green); }
     .teacher-note { margin-top: 20px; padding: 16px 17px; border: 1px solid #eadfc8; border-radius: 13px; background: #fffcf6; }
     .teacher-note-head { margin-bottom: 7px; display: flex; justify-content: space-between; gap: 10px; }
-    .teacher-note-title { color: #795b2e; font-size: 11px; font-weight: 900; }
-    .teacher-note-en { color: #b19974; font-family: Georgia, serif; font-size: 8px; font-style: italic; }
-    .teacher-note-content { color: #554d41; font-size: 9px; line-height: 1.8; white-space: pre-wrap; }
+    .teacher-note-title { color: #795b2e; font-size: 13px; font-weight: 900; }
+    .teacher-note-en { color: #b19974; font-family: Georgia, serif; font-size: 9px; font-style: italic; }
+    .teacher-note-content { color: #554d41; font-size: 12px; line-height: 1.85; white-space: pre-wrap; }
     .progress-wrap { margin-top: 17px; padding-top: 12px; border-top: 1px solid #e8ebf0; }
     .progress-head { margin-bottom: 5px; display: flex; justify-content: space-between; color: #8b95a7; font-size: 8px; font-weight: 900; }
     .progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: #edf0f4; }
@@ -283,7 +301,7 @@
     .report-footer { margin-top: 18px; padding-top: 12px; display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #e8ebf0; color: #98a1b1; font-size: 7px; }
     .toast { position: fixed; z-index: 100; right: 20px; bottom: 20px; max-width: min(360px,calc(100vw - 40px)); padding: 10px 13px; border: 1px solid #cdd8ed; border-radius: 10px; color: #26457e; background: #f4f8ff; box-shadow: 0 14px 30px rgba(26,44,76,.16); opacity: 0; pointer-events: none; transform: translateY(10px); transition: .18s ease; font-size: 11px; }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .capture-stage { position: fixed; z-index: -100; left: -10000px; top: 0; width: 900px; background: white; pointer-events: none; }
+    .capture-stage { position: fixed; z-index: -100; left: -10000px; top: 0; width: 640px; background: white; pointer-events: none; }
 
     @media (max-width: 1160px) {
       .workspace-grid { grid-template-columns: 1fr; }
@@ -312,10 +330,11 @@
     @media (max-width: 480px) {
       .brand p, .btn-label { display: none; }
       .grid-4 { grid-template-columns: 1fr; }
-      .report-meta { grid-template-columns: 1fr; }
-      .meta-cell { border-right: 0; border-bottom: 1px solid #e5e9ef; }
-      .meta-cell:last-child { border-bottom: 0; }
-      .homework-row { grid-template-columns: 54px minmax(0,1fr); }
+      .report-meta { grid-template-columns: 1fr 1fr; }
+      .meta-cell { border-right: 1px solid #e5e9ef; }
+      .meta-cell:nth-child(2n) { border-right: 0; }
+      .meta-cell:nth-child(-n+2) { border-bottom: 1px solid #e5e9ef; }
+      .homework-row-value .class-records { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
     @media print {
       @page { size: A4; margin: 9mm; }
@@ -335,7 +354,7 @@
       <div class="brand">
         <div class="brand-mark">B</div>
         <div>
-          <h1>课堂与课后综合反馈编辑器 <span style="color:#7fa7ff;font-size:10px">v7.2</span></h1>
+          <h1>课堂与课后综合反馈编辑器 <span style="color:#7fa7ff;font-size:10px">v8.1</span></h1>
           <p>CLASSROOM &amp; HOMEWORK FEEDBACK · OFFLINE</p>
         </div>
       </div>
@@ -438,10 +457,11 @@
               <div class="record-builder pron">
                 <div class="record-builder-grid" style="grid-template-columns:1.1fr .8fr 1.7fr auto">
                   <input id="pronWord" placeholder="完整单词，如 afternoon">
-                  <input id="pronPart" placeholder="标红部分，如 oo">
+                  <input id="pronPart" placeholder="标红音块，如 ow/e">
                   <input id="pronNote" placeholder="发音提示，如 oo 音再拉长一些">
                   <button class="btn btn-small btn-primary" id="addPron" type="button">加入</button>
                 </div>
+                <div class="red-help">多个音块可用“/”填写，例如 towel 填写 ow/e；预览仍保持完整单词，只把 ow 和 e 标红。</div>
                 <div class="quick-row" id="pronQuickRow"></div>
               </div>
               <div class="record-list" id="pronList"></div>
@@ -703,7 +723,7 @@
         splitLines(text).forEach(line => { if (!lines.includes(line)) lines.push(line); });
         return numbered ? lines.map((line,i)=>`${i+1}. ${line}`).join('\n') : lines.join('\n');
       }
-      function newTask(seed={}) { return { id:seed.id||uid('t'), t:String(seed.t??seed.title??''), p:String(seed.p??seed.performance??''), f:String(seed.f??seed.focus??''), i:String(seed.i??seed.improve??seed.advice??''), open:seed.open!==false }; }
+      function newTask(seed={}) { return { id:seed.id||uid('t'), t:String(seed.t??seed.title??''), p:String(seed.p??seed.performance??''), f:String(seed.f??seed.focus??''), i:String(seed.i??seed.improve??seed.advice??''), m:(seed.m||seed.marks||seed.markedWords||[]).map(x=>newRecord(x,'tm')), open:seed.open!==false }; }
       function newRecord(seed={}, prefix='r') { return { id:seed.id||uid(prefix), type:String(seed.type||''), word:String(seed.word||seed.target||''), part:String(seed.part||seed.highlight||''), note:String(seed.note||seed.issue||'') }; }
       function newRecallRecord(seed={}) {
         const item=typeof seed==='string'?{word:seed}:(seed&&typeof seed==='object'?seed:{});
@@ -712,7 +732,7 @@
 
       function cloneState() {
         return {
-          version:'7.2-offline', exportedAt:new Date().toISOString(),
+          version:'8.1-whole-word-highlight-offline', exportedAt:new Date().toISOString(),
           n:state.n, d:state.d, c:state.c, u:state.u, cur:state.cur, tot:state.tot, b1:state.b1, b2:state.b2,
           classroom:{
             mainTasks:state.classroom.mainTasks, keyPoints:state.classroom.keyPoints,
@@ -721,7 +741,7 @@
             enabled:{...state.classroom.enabled},
             grammar:state.classroom.grammar, performance:state.classroom.performance, remarks:state.classroom.remarks
           },
-          f:state.f, v:state.v.map(({id,t,p,f,i})=>({id,t,p,f,i})), w:state.w.map(({id,t,p,f,i})=>({id,t,p,f,i}))
+          f:state.f, v:state.v.map(({id,t,p,f,i,m})=>({id,t,p,f,i,m:m.map(r=>({...r}))})), w:state.w.map(({id,t,p,f,i,m})=>({id,t,p,f,i,m:m.map(r=>({...r}))}))
         };
       }
 
@@ -836,17 +856,29 @@
       }
 
       function highlightedWord(word, parts) {
-        let html=escapeHTML(word||'');
-        const tokens=String(parts||'').split('|').map(s=>s.trim()).filter(Boolean).sort((a,b)=>b.length-a.length);
-        if(!tokens.length) return html || '—';
         const safeWord=String(word||'');
-        const pattern=new RegExp(tokens.map(escapeRegExp).join('|'),'gi');
-        let last=0, out='', matched=false, m;
-        while((m=pattern.exec(safeWord))!==null){
-          matched=true; out+=escapeHTML(safeWord.slice(last,m.index)); out+=`<mark class="issue-mark">${escapeHTML(m[0])}</mark>`; last=m.index+m[0].length;
-          if(m[0].length===0) pattern.lastIndex++;
-        }
-        if(!matched) return html;
+        const html=escapeHTML(safeWord);
+        const rawParts=String(parts||''), segmentMode=rawParts.includes('/');
+        const specs=rawParts.split(segmentMode?'/':'|').map(raw=>{
+          const value=raw.trim(), matched=value.match(/^(.*?)(?:#(\d+))?$/);
+          return { token:(matched?.[1]||'').trim(), occurrence:matched?.[2]?Number(matched[2]):0 };
+        }).filter(spec=>spec.token).sort((a,b)=>b.token.length-a.token.length);
+        if(!specs.length) return html || '—';
+        const ranges=[];
+        specs.forEach(spec=>{
+          const pattern=new RegExp(escapeRegExp(spec.token),'gi'), found=[]; let match;
+          while((match=pattern.exec(safeWord))!==null){ found.push([match.index,match.index+match[0].length]); if(match[0].length===0) pattern.lastIndex++; }
+          const selected=spec.occurrence?found.slice(spec.occurrence-1,spec.occurrence):found;
+          selected.forEach(range=>{ if(!ranges.some(existing=>range[0]<existing[1]&&range[1]>existing[0])) ranges.push(range); });
+        });
+        if(!ranges.length) return html;
+        ranges.sort((a,b)=>a[0]-b[0]);
+        let last=0, out='';
+        ranges.forEach(([start,end])=>{
+          out+=escapeHTML(safeWord.slice(last,start));
+          out+=`<mark class="issue-mark">${escapeHTML(safeWord.slice(start,end))}</mark>`;
+          last=end;
+        });
         return out+escapeHTML(safeWord.slice(last));
       }
 
@@ -913,14 +945,21 @@
       }
 
       function renderShortBox(kind) {
-        return `<details class="short-box"><summary>${kind==='voice'?'错音速记':'书写速记'}</summary>
-          <div class="short-grid"><input data-short-target placeholder="${kind==='voice'?'单词，如 water':'字母/单词，如 a'}"><input data-short-issue placeholder="${kind==='voice'?'问题音或发音提示':'书写问题点'}"><button class="btn btn-small" type="button" data-short-add>加入</button></div>
+        return `<details class="short-box"><summary>${kind==='voice'?'错音局部标红':'拼写局部标红'}</summary>
+          <div class="short-grid">
+            <input data-short-target placeholder="完整单词，如 afternoon">
+            <input data-short-part placeholder="标红音块，如 ow/e">
+            <input data-short-issue placeholder="${kind==='voice'?'问题说明，如 oo 音再拉长':'问题说明，如字母顺序易错'}">
+            <button class="btn btn-small" type="button" data-short-add>加入</button>
+          </div>
+          <div class="short-help">多个片段同时标红可用“|”或“/”；例如 towel 填 ow/e，预览仍显示完整单词，只把 ow 和 e 标红。</div>
+          <div class="task-mark-list"></div>
         </details>`;
       }
 
       function renderTaskCard(task,kind,index) {
         const title=task.t.trim()||`未命名${KIND[kind].label}任务 ${index+1}`;
-        const summary=task.p.trim()||task.f.trim()||task.i.trim()||'点击展开填写任务点评';
+        const summary=task.p.trim()||task.f.trim()||(task.m.length?`${task.m[0].word} 的局部细节需关注`:'')||task.i.trim()||'点击展开填写任务点评';
         return `<article class="task-card ${task.open?'open':''}" data-kind="${kind}" data-id="${task.id}">
           <button class="task-head" type="button" aria-expanded="${task.open?'true':'false'}"><span class="task-order">${String(index+1).padStart(2,'0')}</span><span class="task-head-copy"><span class="task-head-title">${escapeHTML(title)}</span><span class="task-head-summary">${escapeHTML(summary)}</span></span><span class="task-arrow">⌄</span></button>
           <div class="task-body">
@@ -943,11 +982,28 @@
       }
 
       function taskFromCard(card) { const cfg=KIND[card.dataset.kind]; return state[cfg.key].find(t=>t.id===card.dataset.id); }
-      function refreshCard(card,task) { $('.task-head-title',card).textContent=task.t.trim()||'未命名任务'; $('.task-head-summary',card).textContent=task.p.trim()||task.f.trim()||task.i.trim()||'点击展开填写任务点评'; }
+      function refreshCard(card,task) { $('.task-head-title',card).textContent=task.t.trim()||'未命名任务'; $('.task-head-summary',card).textContent=task.p.trim()||task.f.trim()||(task.m.length?`${task.m[0].word} 的局部细节需关注`:'')||task.i.trim()||'点击展开填写任务点评'; }
+
+      function renderTaskMarks(card,task) {
+        const root=$('.task-mark-list',card);
+        if(!root) return;
+        root.innerHTML=task.m.length?task.m.map(record=>`
+          <div class="record-item" data-task-mark-id="${record.id}">
+            <div class="record-word-preview">${highlightedWord(record.word,record.part)}</div>
+            <div class="record-note">${escapeHTML(record.note||'该标红部分需要再留意')}</div>
+            <button class="record-remove" type="button" title="删除标红记录">×</button>
+          </div>`).join(''):'<div class="record-empty">暂无局部标红记录。</div>';
+        $$('.record-remove',root).forEach(btn=>btn.addEventListener('click',()=>{
+          const id=btn.closest('[data-task-mark-id]').dataset.taskMarkId;
+          task.m=task.m.filter(record=>record.id!==id);
+          renderTaskMarks(card,task); refreshCard(card,task); renderPreview(); saveLocal();
+        }));
+      }
 
       function bindTaskEvents() {
         $$('.task-card').forEach(card=>{
           const task=taskFromCard(card);
+          renderTaskMarks(card,task);
           $('.task-head',card).addEventListener('click',()=>{ task.open=!task.open; card.classList.toggle('open',task.open); $('.task-head',card).setAttribute('aria-expanded',String(task.open)); });
           $$('[data-task-field]',card).forEach(control=>{
             control.addEventListener('input',e=>{ task[e.target.dataset.taskField]=e.target.value; refreshCard(card,task); renderPreview(); saveLocal(); });
@@ -959,10 +1015,14 @@
           }));
           const shortAdd=$('[data-short-add]',card);
           shortAdd.addEventListener('click',()=>{
-            const box=shortAdd.closest('.short-box'); const target=$('[data-short-target]',box).value.trim(); const issue=$('[data-short-issue]',box).value.trim();
-            if(!target&&!issue){ showToast('请先填写单词/字母和问题点'); return; }
-            const line=target&&issue?`${target} ➡ ${issue.replace(/[；;。]+$/,'')}；`:target?`${target} ➡ 需要再留意；`:`${issue}；`;
-            task.f=appendText(task.f,line,true); $('[data-task-field="f"]',card).value=task.f; $('[data-short-target]',box).value=''; $('[data-short-issue]',box).value=''; refreshCard(card,task); renderPreview(); saveLocal();
+            const box=shortAdd.closest('.short-box');
+            const target=$('[data-short-target]',box).value.trim();
+            const part=$('[data-short-part]',box).value.trim();
+            const issue=$('[data-short-issue]',box).value.trim();
+            if(!target){ showToast('请先填写完整单词'); $('[data-short-target]',box).focus(); return; }
+            task.m.push(newRecord({type:card.dataset.kind==='voice'?'发音':'拼写',word:target,part,note:issue},'tm'));
+            $('[data-short-target]',box).value=''; $('[data-short-part]',box).value=''; $('[data-short-issue]',box).value='';
+            renderTaskMarks(card,task); refreshCard(card,task); renderPreview(); saveLocal(); $('[data-short-target]',box).focus();
           });
           $('[data-remove-task]',card).addEventListener('click',()=>{
             if(!confirm('确定删除这条任务吗？')) return; const cfg=KIND[card.dataset.kind]; state[cfg.key]=state[cfg.key].filter(t=>t.id!==card.dataset.id); renderTasks(); renderPreview(); saveLocal();
@@ -985,13 +1045,19 @@
       function renderBullets(text) { const lines=splitLines(text); return lines.length?lines.map((line,i)=>`<div class="bullet-line"><span class="bullet-num">${i+1}</span><span>${escapeHTML(line)}</span></div>`).join(''):'<span class="empty-text">暂无记录</span>'; }
       function renderNumbered(text) { const lines=splitLines(text); return lines.length?lines.map((line,i)=>`<div class="numbered-line"><span class="number-badge">${i+1}</span><span>${escapeHTML(line)}</span></div>`).join(''):'<span class="empty-text">暂无记录</span>'; }
       function renderPlain(text) { return String(text||'').trim()?escapeHTML(String(text).trim()).replace(/\n/g,'<br>'):'<span class="empty-text">暂无记录</span>'; }
-      function renderClassRecords(list) { return list.length?`<div class="class-records">${list.map(r=>`<div class="class-record"><div class="class-record-head">${r.type?`<span class="record-tag">${escapeHTML(r.type)}</span>`:''}<span class="class-word">${highlightedWord(r.word,r.part)}</span></div>${r.note?`<div class="class-note">${escapeHTML(r.note)}</div>`:''}</div>`).join('')}</div>`:'<span class="empty-text">暂无记录</span>'; }
+      function renderClassRecords(list,options={}) { const hideNotes=!!options.hideNotes; return list.length?`<div class="class-records">${list.map(r=>`<div class="class-record"><div class="class-record-head">${r.type?`<span class="record-tag">${escapeHTML(r.type)}</span>`:''}<span class="class-word">${highlightedWord(r.word,r.part)}</span></div>${!hideNotes&&r.note?`<div class="class-note">${escapeHTML(r.note)}</div>`:''}</div>`).join('')}</div>`:'<span class="empty-text">暂无记录</span>'; }
+
+      function renderTaskFocus(task) {
+        const marked=task.m.length?renderClassRecords(task.m):'';
+        const notes=String(task.f||'').trim()?`<div style="margin-top:${task.m.length?'8px':'0'}">${renderNumbered(task.f)}</div>`:'';
+        return marked||notes?marked+notes:'<span class="empty-text">暂无记录</span>';
+      }
 
       function renderHomework(kind) {
         const cfg=KIND[kind], list=state[cfg.key];
-        return list.map((task,i)=>`<article class="homework-card ${kind==='writing'?'writing':''}"><div class="homework-title"><span class="homework-no">${i+1}</span><span>${escapeHTML(task.t.trim()||`未命名${cfg.label}任务`)}</span></div><div class="homework-rows">
+        return list.map((task,i)=>`<article class="homework-card ${kind==='writing'?'writing':''}"><div class="homework-title"><span class="homework-kind-tag">${cfg.label}</span><span class="homework-title-text">${escapeHTML(task.t.trim()||`未命名${cfg.label}任务 ${i+1}`)}</span></div><div class="homework-rows">
           <div class="homework-row"><div class="homework-row-label">表现记录</div><div class="homework-row-value">${renderPlain(task.p)}</div></div>
-          <div class="homework-row"><div class="homework-row-label">重点关注</div><div class="homework-row-value">${renderNumbered(task.f)}</div></div>
+          <div class="homework-row"><div class="homework-row-label">重点关注</div><div class="homework-row-value">${renderTaskFocus(task)}</div></div>
           <div class="homework-row"><div class="homework-row-label">改进建议</div><div class="homework-row-value">${renderNumbered(task.i)}</div></div>
         </div></article>`).join('');
       }
@@ -1009,9 +1075,9 @@
             <div class="report-meta">${[['Student / 姓名',state.n||'—'],['Class / 班级',state.c||'—'],['Date / 日期',formatDate(state.d)],['Unit / 单元',state.u||'—']].map(([l,v])=>`<div class="meta-cell"><div class="meta-label">${escapeHTML(l)}</div><div class="meta-value">${escapeHTML(v)}</div></div>`).join('')}</div>
             ${hasClassCore?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">课</div><div class="report-section-title">本节重点知识点 <small>Today's Key Learning</small></div></div><div class="focus-grid"><div class="focus-card full"><div class="focus-card-title">课后重点消化</div><div class="focus-card-content">${renderBullets(state.classroom.keyPoints)}</div></div></div></section>`:''}
             ${hasClassFeedback?`<section class="report-section"><div class="report-section-head"><div class="report-section-icon">评</div><div class="report-section-title">课堂学习反馈 <small>Classroom Feedback</small></div></div><div class="focus-grid">
-              ${spellingRecords.length?`<div class="focus-card"><div class="focus-card-title">${spellingTitle}</div><div class="focus-card-content">${renderClassRecords(spellingRecords)}</div></div>`:''}
-              ${enabled.pronunciation&&state.classroom.pronunciation.length?`<div class="focus-card"><div class="focus-card-title">单词发音</div><div class="focus-card-content">${renderClassRecords(state.classroom.pronunciation)}</div></div>`:''}
-              ${enabled.recall&&state.classroom.recall.length?`<div class="focus-card full recall-card"><div class="focus-card-title">单词回溯</div><div class="recall-description">以前学过、现在遗忘的单词，需重新复习巩固。</div><div class="focus-card-content">${renderRecallRecords()}</div></div>`:''}
+              ${spellingRecords.length?`<div class="focus-card classroom-word-card"><div class="focus-card-title">${spellingTitle}</div><div class="focus-card-content">${renderClassRecords(spellingRecords)}</div></div>`:''}
+              ${enabled.pronunciation&&state.classroom.pronunciation.length?`<div class="focus-card classroom-word-card"><div class="focus-card-title">单词发音</div><div class="focus-card-content">${renderClassRecords(state.classroom.pronunciation)}</div></div>`:''}
+              ${enabled.recall&&state.classroom.recall.length?`<div class="focus-card full recall-card classroom-word-card"><div class="focus-card-title">单词回溯</div><div class="recall-description">以前学过、现在遗忘的单词，需重新复习巩固。</div><div class="focus-card-content">${renderRecallRecords()}</div></div>`:''}
               ${enabled.grammar&&state.classroom.grammar.trim()?`<div class="focus-card full"><div class="focus-card-title">课堂语法与知识点</div><div class="focus-card-content">${renderBullets(state.classroom.grammar)}</div></div>`:''}
               ${enabled.performance&&state.classroom.performance.trim()?`<div class="focus-card"><div class="focus-card-title">课堂表现概况</div><div class="focus-card-content">${renderPlain(state.classroom.performance)}</div></div>`:''}
               ${enabled.remarks&&state.classroom.remarks.trim()?`<div class="focus-card"><div class="focus-card-title">课堂备注</div><div class="focus-card-content">${renderPlain(state.classroom.remarks)}</div></div>`:''}
@@ -1038,9 +1104,9 @@
         const btn=$('#imageBtn'), old=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span>…</span><span class="btn-label">生成中</span>';
         try {
           if(document.fonts?.ready) await document.fonts.ready;
-          const clone=$('#preview').cloneNode(true); clone.style.width='900px'; clone.style.borderRadius='0'; clone.style.boxShadow='none';
+          const clone=$('#preview').cloneNode(true); clone.style.width='640px'; clone.style.borderRadius='0'; clone.style.boxShadow='none';
           const stage=document.createElement('div'); stage.className='capture-stage'; stage.appendChild(clone); document.body.appendChild(stage);
-          const width=900, height=Math.ceil(clone.scrollHeight);
+          const width=640, height=Math.ceil(clone.scrollHeight);
           const css=Array.from(document.styleSheets).map(sheet=>{try{return Array.from(sheet.cssRules).map(r=>r.cssText).join('\n')}catch(e){return''}}).join('\n');
           const reportXML=new XMLSerializer().serializeToString(clone);
           const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;background:#fff"><style>${escapeHTML(css)}</style>${reportXML}</div></foreignObject></svg>`;
